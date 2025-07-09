@@ -1,3 +1,81 @@
+# SAP Mock Service for .NET Aspire
+
+A comprehensive SAP mocking service designed for .NET Aspire applications, enabling developers to test SAP-dependent services without connecting to actual SAP systems.
+
+## 🎯 Overview
+
+The SAP Mock Service provides a flexible, configurable solution for simulating SAP system responses during development and testing. Built specifically for .NET Aspire orchestration, it allows teams to work independently with consistent mock data while supporting custom extensions for specific testing scenarios.
+
+## 🚀 Key Features
+
+- **Multi-System Support** - Mock multiple SAP systems simultaneously (ECC, S/4HANA, etc.)
+- **Module-Based Architecture** - Supports common SAP modules (MM, SD, FI) with easy extensibility
+- **Layered Data Management** - Shared common data with developer-specific overrides
+- **Dynamic Configuration** - Switch between data sets and configurations via Aspire
+- **SAP-Authentic Responses** - Mimics real SAP response formats and behaviors
+- **Error Simulation** - Test failure scenarios and edge cases
+- **Full Aspire Integration** - Seamless orchestration with dependent services
+- **File-Based Mock Data** - Easy to version control and share across teams
+
+## 🏗️ Architecture
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│   Your Service  │────▶│  SAP Mock API   │────▶│   Mock Data     │
+│  (.NET Aspire)  │     │  (.NET Core 8)  │     │  (JSON Files)   │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+                               │
+                               ▼
+                        ┌─────────────────┐
+                        │  Configuration  │
+                        │  (Systems/Mods) │
+                        └─────────────────┘
+```
+
+## 💡 Use Cases
+
+- **Local Development** - Develop without VPN or SAP system access
+- **Integration Testing** - Consistent, repeatable test scenarios
+- **CI/CD Pipelines** - Automated testing without SAP dependencies
+- **Demo Environments** - Showcase functionality without production data
+- **Performance Testing** - Load test without impacting SAP systems
+- **Failure Testing** - Simulate SAP errors and timeouts
+
+## 🏃 Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/yourorg/sap-mock-service.git
+
+# Start with Aspire
+dotnet run --project ./AppHost
+
+# Access the mock service
+curl http://localhost:5000/api/ERP-DEV/MM/materials/MATERIAL-001
+```
+
+## 📦 What's Included
+
+- Core mocking framework with plugin architecture
+- Pre-built handlers for Materials Management (MM), Sales & Distribution (SD), and Finance (FI)
+- Sample mock data for common SAP entities
+- Configuration templates for different SAP systems
+- Aspire orchestration setup
+- Comprehensive documentation and examples
+
+## 🤝 Contributing
+
+This service is designed to be extended by development teams. Add your own modules, customize responses, and share improvements back to the team. See our [Contributing Guide](CONTRIBUTING.md) for details.
+
+## 📄 License
+
+[Your License Here]
+
+---
+
+Built with ❤️ for .NET developers working with SAP integrations.
+
+
 # SAP Mocking Service for .NET Aspire - Comprehensive Implementation Guide
 
 ## Architecture Overview
