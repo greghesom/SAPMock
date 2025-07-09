@@ -8,11 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting" Version="9.3.2" />
+    <ProjectReference Include="..\src\SAPMock.Api\SAPMock.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\SAPMock.Api\SAPMock.Api.csproj" />
+    <PackageReference Include="Aspire.Hosting" Version="9.3.2" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,9 @@
+using SAPMock.ServiceDefaults;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Add Aspire service defaults
+builder.AddServiceDefaults();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
