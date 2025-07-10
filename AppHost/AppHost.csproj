@@ -9,10 +9,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\src\SAPMock.Api\SAPMock.Api.csproj" />
+    <ProjectReference Include="..\src\SAPMock.ServiceDefaults\SAPMock.ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting" Version="9.3.2" />
+    <PackageReference Include="Aspire.Hosting" Version="8.2.2" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
   </ItemGroup>
 
 </Project>
