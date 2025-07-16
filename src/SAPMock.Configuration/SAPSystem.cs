@@ -5,7 +5,7 @@ namespace SAPMock.Configuration;
 /// <summary>
 /// Concrete implementation of ISAPSystem for configuration purposes.
 /// </summary>
-internal class SAPSystem : ISAPSystem
+public class SAPSystem : ISAPSystem
 {
     /// <summary>
     /// Gets the unique identifier for the SAP system.

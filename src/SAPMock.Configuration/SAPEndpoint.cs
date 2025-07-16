@@ -5,7 +5,7 @@ namespace SAPMock.Configuration;
 /// <summary>
 /// Concrete implementation of ISAPEndpoint for configuration purposes.
 /// </summary>
-internal class SAPEndpoint : ISAPEndpoint
+public class SAPEndpoint : ISAPEndpoint
 {
     /// <summary>
     /// Gets the path of the endpoint (e.g., "/sap/opu/rest/service").

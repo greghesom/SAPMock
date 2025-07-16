@@ -24,4 +24,24 @@ public interface ISAPSystemRegistry
     /// </summary>
     /// <returns>A task that represents the asynchronous operation, containing all registered SAP systems.</returns>
     Task<IEnumerable<ISAPSystem>> GetAllSystemsAsync();
+    
+    /// <summary>
+    /// Asynchronously retrieves all modules for a specific SAP system.
+    /// </summary>
+    /// <param name="systemId">The unique identifier of the SAP system.</param>
+    /// <returns>A task that represents the asynchronous operation, containing the modules for the specified system.</returns>
+    Task<IEnumerable<ISAPModule>> GetModulesForSystem(string systemId);
+    
+    /// <summary>
+    /// Performs a health check on a specific SAP system.
+    /// </summary>
+    /// <param name="systemId">The unique identifier of the SAP system to check.</param>
+    /// <returns>A task that represents the asynchronous health check operation, returning true if the system is healthy.</returns>
+    Task<bool> IsSystemHealthy(string systemId);
+    
+    /// <summary>
+    /// Performs a health check on all registered SAP systems.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous health check operation, returning a dictionary of system health status.</returns>
+    Task<Dictionary<string, bool>> GetSystemHealthStatus();
 }
