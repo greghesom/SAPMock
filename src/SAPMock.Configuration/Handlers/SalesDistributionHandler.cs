@@ -1067,8 +1067,8 @@ public class SalesDistributionHandler : ISAPModuleHandler
     {
         try
         {
-            var wrapper = await _mockDataProvider.GetDataAsync<CustomersCollectionWrapper>("default/default/customerscollectionwrapper");
-            return wrapper.Customers;
+            var customers = await _mockDataProvider.GetDataAsync<List<Customer>>($"{_systemId}/SD/customers");
+            return customers;
         }
         catch (Exception)
         {
@@ -1081,8 +1081,12 @@ public class SalesDistributionHandler : ISAPModuleHandler
     /// </summary>
     private async Task SaveAllCustomersAsync(IEnumerable<Customer> customers)
     {
-        var wrapper = new CustomersCollectionWrapper { Customers = customers.ToList() };
-        await _mockDataProvider.SaveDataAsync(wrapper);
+        // For now, we'll just save individually since the SaveDataAsync method doesn't support collections
+        // In a real implementation, this would be optimized
+        foreach (var customer in customers)
+        {
+            await _mockDataProvider.SaveDataAsync(customer);
+        }
     }
 
     /// <summary>
@@ -1092,8 +1096,8 @@ public class SalesDistributionHandler : ISAPModuleHandler
     {
         try
         {
-            var wrapper = await _mockDataProvider.GetDataAsync<SalesOrdersCollectionWrapper>("default/default/salesorderscollectionwrapper");
-            return wrapper.SalesOrders;
+            var salesOrders = await _mockDataProvider.GetDataAsync<List<SalesOrder>>($"{_systemId}/SD/sales-orders");
+            return salesOrders;
         }
         catch (Exception)
         {
@@ -1106,8 +1110,12 @@ public class SalesDistributionHandler : ISAPModuleHandler
     /// </summary>
     private async Task SaveAllSalesOrdersAsync(IEnumerable<SalesOrder> salesOrders)
     {
-        var wrapper = new SalesOrdersCollectionWrapper { SalesOrders = salesOrders.ToList() };
-        await _mockDataProvider.SaveDataAsync(wrapper);
+        // For now, we'll just save individually since the SaveDataAsync method doesn't support collections
+        // In a real implementation, this would be optimized
+        foreach (var salesOrder in salesOrders)
+        {
+            await _mockDataProvider.SaveDataAsync(salesOrder);
+        }
     }
 
     /// <summary>
@@ -1117,8 +1125,8 @@ public class SalesDistributionHandler : ISAPModuleHandler
     {
         try
         {
-            var wrapper = await _mockDataProvider.GetDataAsync<DeliveriesCollectionWrapper>("default/default/deliveriescollectionwrapper");
-            return wrapper.Deliveries;
+            var deliveries = await _mockDataProvider.GetDataAsync<List<Delivery>>($"{_systemId}/SD/deliveries");
+            return deliveries;
         }
         catch (Exception)
         {
@@ -1131,8 +1139,12 @@ public class SalesDistributionHandler : ISAPModuleHandler
     /// </summary>
     private async Task SaveAllDeliveriesAsync(IEnumerable<Delivery> deliveries)
     {
-        var wrapper = new DeliveriesCollectionWrapper { Deliveries = deliveries.ToList() };
-        await _mockDataProvider.SaveDataAsync(wrapper);
+        // For now, we'll just save individually since the SaveDataAsync method doesn't support collections
+        // In a real implementation, this would be optimized
+        foreach (var delivery in deliveries)
+        {
+            await _mockDataProvider.SaveDataAsync(delivery);
+        }
     }
 
     /// <summary>
@@ -1142,8 +1154,8 @@ public class SalesDistributionHandler : ISAPModuleHandler
     {
         try
         {
-            var wrapper = await _mockDataProvider.GetDataAsync<InvoicesCollectionWrapper>("default/default/invoicescollectionwrapper");
-            return wrapper.Invoices;
+            var invoices = await _mockDataProvider.GetDataAsync<List<Invoice>>($"{_systemId}/SD/invoices");
+            return invoices;
         }
         catch (Exception)
         {
@@ -1156,31 +1168,12 @@ public class SalesDistributionHandler : ISAPModuleHandler
     /// </summary>
     private async Task SaveAllInvoicesAsync(IEnumerable<Invoice> invoices)
     {
-        var wrapper = new InvoicesCollectionWrapper { Invoices = invoices.ToList() };
-        await _mockDataProvider.SaveDataAsync(wrapper);
-    }
-
-    /// <summary>
-    /// Wrapper classes to ensure consistent naming for collections.
-    /// </summary>
-    private class CustomersCollectionWrapper
-    {
-        public List<Customer> Customers { get; set; } = new();
-    }
-
-    private class SalesOrdersCollectionWrapper
-    {
-        public List<SalesOrder> SalesOrders { get; set; } = new();
-    }
-
-    private class DeliveriesCollectionWrapper
-    {
-        public List<Delivery> Deliveries { get; set; } = new();
-    }
-
-    private class InvoicesCollectionWrapper
-    {
-        public List<Invoice> Invoices { get; set; } = new();
+        // For now, we'll just save individually since the SaveDataAsync method doesn't support collections
+        // In a real implementation, this would be optimized
+        foreach (var invoice in invoices)
+        {
+            await _mockDataProvider.SaveDataAsync(invoice);
+        }
     }
 
     /// <summary>
@@ -1541,34 +1534,85 @@ public class SalesDistributionHandler : ISAPModuleHandler
 
     /// <summary>
     /// Extracts ID from request context.
-    /// This is a placeholder - in a real implementation, this would extract from route parameters.
     /// </summary>
     private static string ExtractIdFromRequest(object request)
     {
-        // In a real implementation, this would extract from the HTTP context or route parameters
-        // For now, return a placeholder
+        if (request is not null)
+        {
+            var type = request.GetType();
+            
+            // Check if it has RouteParameters property
+            var routeParametersProperty = type.GetProperty("RouteParameters");
+            if (routeParametersProperty != null)
+            {
+                var routeParams = routeParametersProperty.GetValue(request) as Dictionary<string, object?>;
+                if (routeParams != null && routeParams.ContainsKey("id"))
+                {
+                    return routeParams["id"]?.ToString() ?? "DEFAULT_ID";
+                }
+            }
+        }
+        
         return "DEFAULT_ID";
     }
 
     /// <summary>
     /// Extracts customer list parameters from request context.
-    /// This is a placeholder - in a real implementation, this would extract from query parameters.
     /// </summary>
     private static (int page, int pageSize, string? customerGroup, string? salesOrganization, string? searchTerm) ExtractCustomerListParametersFromRequest(object request)
     {
-        // In a real implementation, this would extract from query parameters
-        // For now, return default values
+        if (request is not null)
+        {
+            var type = request.GetType();
+            
+            // Check if it has QueryParameters property
+            var queryParametersProperty = type.GetProperty("QueryParameters");
+            if (queryParametersProperty != null)
+            {
+                var queryParams = queryParametersProperty.GetValue(request) as Dictionary<string, string>;
+                if (queryParams != null)
+                {
+                    int.TryParse(queryParams.GetValueOrDefault("page", "1"), out int page);
+                    int.TryParse(queryParams.GetValueOrDefault("pageSize", "50"), out int pageSize);
+                    var customerGroup = queryParams.GetValueOrDefault("customerGroup");
+                    var salesOrganization = queryParams.GetValueOrDefault("salesOrganization");
+                    var searchTerm = queryParams.GetValueOrDefault("searchTerm");
+                    
+                    return (page, pageSize, customerGroup, salesOrganization, searchTerm);
+                }
+            }
+        }
+        
         return (1, 50, null, null, null);
     }
 
     /// <summary>
     /// Extracts sales order list parameters from request context.
-    /// This is a placeholder - in a real implementation, this would extract from query parameters.
     /// </summary>
     private static (int page, int pageSize, string? customerNumber, string? salesOrganization, string? orderStatus) ExtractSalesOrderListParametersFromRequest(object request)
     {
-        // In a real implementation, this would extract from query parameters
-        // For now, return default values
+        if (request is not null)
+        {
+            var type = request.GetType();
+            
+            // Check if it has QueryParameters property
+            var queryParametersProperty = type.GetProperty("QueryParameters");
+            if (queryParametersProperty != null)
+            {
+                var queryParams = queryParametersProperty.GetValue(request) as Dictionary<string, string>;
+                if (queryParams != null)
+                {
+                    int.TryParse(queryParams.GetValueOrDefault("page", "1"), out int page);
+                    int.TryParse(queryParams.GetValueOrDefault("pageSize", "50"), out int pageSize);
+                    var customerNumber = queryParams.GetValueOrDefault("customerNumber");
+                    var salesOrganization = queryParams.GetValueOrDefault("salesOrganization");
+                    var orderStatus = queryParams.GetValueOrDefault("orderStatus");
+                    
+                    return (page, pageSize, customerNumber, salesOrganization, orderStatus);
+                }
+            }
+        }
+        
         return (1, 50, null, null, null);
     }
 
