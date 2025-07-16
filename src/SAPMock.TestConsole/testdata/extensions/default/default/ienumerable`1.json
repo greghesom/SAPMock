@@ -1,0 +1,26 @@
+[
+  {
+    "materialNumber": "MAT20250716124431959",
+    "description": "Test Material for Steel Rod",
+    "materialType": "ROH",
+    "materialGroup": "STEEL",
+    "baseUnitOfMeasure": "PC",
+    "netWeight": 1.5,
+    "grossWeight": 1.7,
+    "weightUnit": "KG",
+    "plant": "1000",
+    "storageLocation": "0001",
+    "purchasingGroup": "001",
+    "standardPrice": 25.50,
+    "priceUnit": 1,
+    "currency": "USD",
+    "createdOn": "2025-07-16T12:44:31.6160173Z",
+    "createdBy": "SYSTEM",
+    "lastChangedOn": "2025-07-16T12:44:31.6161422Z",
+    "lastChangedBy": "SYSTEM",
+    "deletionFlag": false,
+    "status": "01",
+    "validFrom": null,
+    "validTo": null
+  }
+]
