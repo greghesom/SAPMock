@@ -1,6 +1,6 @@
 [
   {
-    "ErrorType": "Timeout",
+    "ErrorType": 0,
     "Probability": 0.1,
     "DelayMs": 5000,
     "CustomMessage": "Material service timeout",
@@ -11,7 +11,7 @@
     }
   },
   {
-    "ErrorType": "Business",
+    "ErrorType": 2,
     "Probability": 0.05,
     "DelayMs": 0,
     "CustomMessage": "Material not found in system",

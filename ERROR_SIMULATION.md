@@ -25,8 +25,8 @@ Force a specific error by adding the `X-SAP-Mock-Error` header to your request:
 # Simple error type
 curl -H "X-SAP-Mock-Error: Timeout" http://localhost:5000/api/ERP01/MM/materials/MAT001
 
-# JSON configuration for advanced scenarios
-curl -H "X-SAP-Mock-Error: {\"ErrorType\":\"Business\",\"CustomMessage\":\"Invalid material ID\",\"SAPErrorCode\":\"MM_INVALID_ID\"}" \
+# JSON configuration for advanced scenarios  
+curl -H 'X-SAP-Mock-Error: {"ErrorType":2,"CustomMessage":"Invalid material ID","SAPErrorCode":"MM_INVALID_ID"}' \
   http://localhost:5000/api/ERP01/MM/materials/MAT001
 ```
 
@@ -38,7 +38,7 @@ Create error configuration files in the `data/errors/{systemId}/{moduleId}/` dir
 ```json
 [
   {
-    "ErrorType": "Timeout",
+    "ErrorType": 0,
     "Probability": 0.1,
     "DelayMs": 5000,
     "CustomMessage": "Material service timeout",
@@ -49,7 +49,7 @@ Create error configuration files in the `data/errors/{systemId}/{moduleId}/` dir
     }
   },
   {
-    "ErrorType": "Business",
+    "ErrorType": 2,
     "Probability": 0.05,
     "DelayMs": 0,
     "CustomMessage": "Material not found in system",
@@ -106,10 +106,12 @@ Different error types return appropriate HTTP status codes:
 
 ### Error Types
 
-- `Timeout`: Simulates request timeouts
-- `Authorization`: Simulates auth failures
-- `Business`: Simulates business logic errors
-- `System`: Simulates system-level errors
+- `Timeout` (0): Simulates request timeouts
+- `Authorization` (1): Simulates auth failures
+- `Business` (2): Simulates business logic errors
+- `System` (3): Simulates system-level errors
+
+**Note**: When using JSON format in headers or configuration files, use the numeric values (0-3) for the ErrorType field.
 
 ## Examples
 

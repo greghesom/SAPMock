@@ -1,6 +1,6 @@
 [
   {
-    "ErrorType": "Authorization",
+    "ErrorType": 1,
     "Probability": 0.02,
     "DelayMs": 1000,
     "CustomMessage": "Insufficient authorization for sales data",
@@ -11,7 +11,7 @@
     }
   },
   {
-    "ErrorType": "System",
+    "ErrorType": 3,
     "Probability": 0.03,
     "DelayMs": 2000,
     "CustomMessage": "Sales system temporarily unavailable",
