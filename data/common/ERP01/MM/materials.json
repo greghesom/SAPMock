@@ -1,0 +1,38 @@
+[
+  {
+    "materialNumber": "MATERIAL-001",
+    "description": "Common Test Material 1",
+    "materialType": "FERT",
+    "baseUnit": "EA",
+    "materialGroup": "01",
+    "weight": {
+      "gross": 10.5,
+      "net": 10.0,
+      "unit": "KG"
+    },
+    "dimensions": {
+      "length": 100,
+      "width": 50,
+      "height": 30,
+      "unit": "CM"
+    }
+  },
+  {
+    "materialNumber": "MATERIAL-002",
+    "description": "Common Test Material 2",
+    "materialType": "FERT",
+    "baseUnit": "EA",
+    "materialGroup": "02",
+    "weight": {
+      "gross": 5.2,
+      "net": 5.0,
+      "unit": "KG"
+    },
+    "dimensions": {
+      "length": 50,
+      "width": 25,
+      "height": 15,
+      "unit": "CM"
+    }
+  }
+]

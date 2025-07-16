@@ -1,0 +1,6 @@
+@SAPMock.ExampleService_HostAddress = http://localhost:5190
+
+GET {{SAPMock.ExampleService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

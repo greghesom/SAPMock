@@ -29,6 +29,42 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
+    "Development": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "applicationUrl": "http://localhost:5204",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "SAPMock__DataPath": "../../data/profiles/development",
+        "SAPMock__ActiveProfile": "development"
+      }
+    },
+    "Test": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "applicationUrl": "http://localhost:5204",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "SAPMock__DataPath": "../../data/profiles/test",
+        "SAPMock__ActiveProfile": "test",
+        "SAPMock__EnableExtensions": "false"
+      }
+    },
+    "CustomPath": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "applicationUrl": "http://localhost:5204",
+      "commandLineArgs": "--SAPMock:DataPath=../../data/common --SAPMock:ActiveProfile=custom",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
