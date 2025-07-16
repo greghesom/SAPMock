@@ -414,10 +414,9 @@ public class MaterialsManagementHandler : ISAPModuleHandler
     {
         try
         {
-            // The FileBasedMockDataProvider GetCollectionAsync uses the pattern default/default/{typeName}
-            // We'll use a custom approach to store/retrieve materials as a collection
-            var materialsCollection = await _mockDataProvider.GetCollectionAsync<Material>();
-            return materialsCollection;
+            // Use the wrapper to get materials with a predictable key
+            var wrapper = await _mockDataProvider.GetDataAsync<MaterialsCollectionWrapper>("default/default/materialscollectionwrapper");
+            return wrapper.Materials;
         }
         catch (Exception)
         {
@@ -431,9 +430,17 @@ public class MaterialsManagementHandler : ISAPModuleHandler
     /// </summary>
     private async Task SaveAllMaterialsAsync(IEnumerable<Material> materials)
     {
-        // Store the materials as a collection
-        // The FileBasedMockDataProvider will save this as a collection file
-        await _mockDataProvider.SaveDataAsync(materials);
+        // Create a custom wrapper to save with a predictable key
+        var wrapper = new MaterialsCollectionWrapper { Materials = materials.ToList() };
+        await _mockDataProvider.SaveDataAsync(wrapper);
+    }
+
+    /// <summary>
+    /// Wrapper class to ensure consistent naming for materials collection.
+    /// </summary>
+    private class MaterialsCollectionWrapper
+    {
+        public List<Material> Materials { get; set; } = new();
     }
 
     /// <summary>
