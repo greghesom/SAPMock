@@ -1,0 +1,31 @@
+{
+  "systemId": "ERP01",
+  "name": "SAP ERP Development",
+  "type": "ERP",
+  "enabled": true,
+  "connectionParameters": {
+    "server": "sap-erp-dev.company.com",
+    "port": "8000",
+    "client": "100",
+    "language": "EN"
+  },
+  "modules": [
+    {
+      "moduleId": "FI",
+      "name": "Financial Accounting",
+      "systemId": "ERP01",
+      "enabled": true,
+      "configFile": "module-ERP01-FI.json",
+      "endpoints": [
+        {
+          "path": "/sap/opu/rest/fi/general-ledger",
+          "method": "GET",
+          "requestType": "object",
+          "responseType": "object",
+          "handlerType": "DefaultHandler",
+          "enabled": true
+        }
+      ]
+    }
+  ]
+}
