@@ -1,0 +1,33 @@
+{
+  "moduleId": "FI",
+  "name": "Financial Accounting",
+  "systemId": "S4HANA",
+  "enabled": true,
+  "configFile": "",
+  "endpoints": [
+    {
+      "path": "/sap/opu/odata/sap/FI_GENERALLEDGER_SRV/GeneralLedger",
+      "method": "GET",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "DefaultHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/odata/sap/FI_ACCOUNTSPAYABLE_SRV/AccountsPayable",
+      "method": "GET",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "DefaultHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/odata/sap/FI_ACCOUNTSRECEIVABLE_SRV/AccountsReceivable",
+      "method": "GET",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "DefaultHandler",
+      "enabled": true
+    }
+  ]
+}

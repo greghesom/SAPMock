@@ -1,0 +1,52 @@
+[
+  {
+    "accountNumber": "100000",
+    "accountName": "Cash and Cash Equivalents",
+    "accountType": "Assets",
+    "balance": 250000.00,
+    "currency": "USD",
+    "companyCode": "1000",
+    "createdOn": "2024-01-01T00:00:00Z",
+    "lastChangedOn": "2024-02-15T10:30:00Z"
+  },
+  {
+    "accountNumber": "110000",
+    "accountName": "Accounts Receivable",
+    "accountType": "Assets",
+    "balance": 150000.00,
+    "currency": "USD",
+    "companyCode": "1000",
+    "createdOn": "2024-01-01T00:00:00Z",
+    "lastChangedOn": "2024-02-15T10:30:00Z"
+  },
+  {
+    "accountNumber": "200000",
+    "accountName": "Accounts Payable",
+    "accountType": "Liabilities",
+    "balance": -75000.00,
+    "currency": "USD",
+    "companyCode": "1000",
+    "createdOn": "2024-01-01T00:00:00Z",
+    "lastChangedOn": "2024-02-15T10:30:00Z"
+  },
+  {
+    "accountNumber": "300000",
+    "accountName": "Common Stock",
+    "accountType": "Equity",
+    "balance": -200000.00,
+    "currency": "USD",
+    "companyCode": "1000",
+    "createdOn": "2024-01-01T00:00:00Z",
+    "lastChangedOn": "2024-02-15T10:30:00Z"
+  },
+  {
+    "accountNumber": "400000",
+    "accountName": "Sales Revenue",
+    "accountType": "Revenue",
+    "balance": -125000.00,
+    "currency": "USD",
+    "companyCode": "1000",
+    "createdOn": "2024-01-01T00:00:00Z",
+    "lastChangedOn": "2024-02-15T10:30:00Z"
+  }
+]

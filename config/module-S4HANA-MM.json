@@ -1,0 +1,49 @@
+{
+  "moduleId": "MM",
+  "name": "Materials Management",
+  "systemId": "S4HANA",
+  "enabled": true,
+  "configFile": "",
+  "endpoints": [
+    {
+      "path": "/sap/opu/odata/sap/MM_MATERIAL_SRV/Materials",
+      "method": "GET",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "MaterialsHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/odata/sap/MM_MATERIAL_SRV/Materials",
+      "method": "POST",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "MaterialsHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/odata/sap/MM_MATERIAL_SRV/Materials('{id}')",
+      "method": "GET",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "MaterialsHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/odata/sap/MM_MATERIAL_SRV/Materials('{id}')",
+      "method": "PUT",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "MaterialsHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/odata/sap/MM_MATERIAL_SRV/Materials('{id}')",
+      "method": "DELETE",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "MaterialsHandler",
+      "enabled": true
+    }
+  ]
+}

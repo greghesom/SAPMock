@@ -1,0 +1,33 @@
+{
+  "moduleId": "FI",
+  "name": "Financial Accounting",
+  "systemId": "ERP01",
+  "enabled": true,
+  "configFile": "",
+  "endpoints": [
+    {
+      "path": "/sap/opu/rest/fi/general-ledger",
+      "method": "GET",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "DefaultHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/fi/accounts-payable",
+      "method": "GET",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "DefaultHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/fi/accounts-receivable",
+      "method": "GET",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "DefaultHandler",
+      "enabled": true
+    }
+  ]
+}

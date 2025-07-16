@@ -1,0 +1,41 @@
+{
+  "moduleId": "SD",
+  "name": "Sales & Distribution",
+  "systemId": "S4HANA",
+  "enabled": true,
+  "configFile": "",
+  "endpoints": [
+    {
+      "path": "/sap/opu/odata/sap/SD_CUSTOMER_SRV/Customers",
+      "method": "GET",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/odata/sap/SD_CUSTOMER_SRV/Customers('{id}')",
+      "method": "GET",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/odata/sap/SD_SALESORDER_SRV/SalesOrders",
+      "method": "GET",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/odata/sap/SD_SALESORDER_SRV/SalesOrders('{id}')",
+      "method": "GET",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    }
+  ]
+}

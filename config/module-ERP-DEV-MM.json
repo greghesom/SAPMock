@@ -1,0 +1,49 @@
+{
+  "moduleId": "MM",
+  "name": "Materials Management",
+  "systemId": "ERP-DEV",
+  "enabled": true,
+  "configFile": "",
+  "endpoints": [
+    {
+      "path": "/sap/opu/rest/mm/materials",
+      "method": "GET",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "MaterialsHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/mm/materials",
+      "method": "POST",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "MaterialsHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/mm/materials/{id}",
+      "method": "GET",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "MaterialsHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/mm/materials/{id}",
+      "method": "PUT",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "MaterialsHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/mm/materials/{id}",
+      "method": "DELETE",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "MaterialsHandler",
+      "enabled": true
+    }
+  ]
+}
