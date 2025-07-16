@@ -31,4 +31,9 @@ public class SAPEndpoint : ISAPEndpoint
     /// Gets the handler function that processes requests to this endpoint.
     /// </summary>
     public Func<object, Task<object>> Handler { get; set; } = async (req) => await Task.FromResult<object>(new { });
+    
+    /// <summary>
+    /// Gets the error simulation configurations for this endpoint.
+    /// </summary>
+    public IEnumerable<ErrorSimulationConfig> ErrorSimulations { get; set; } = new List<ErrorSimulationConfig>();
 }

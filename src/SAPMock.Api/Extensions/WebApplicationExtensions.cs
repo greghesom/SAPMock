@@ -1,5 +1,6 @@
 using SAPMock.Configuration;
 using SAPMock.Core;
+using Microsoft.AspNetCore.Http;
 
 namespace SAPMock.Api.Extensions;
 
@@ -159,6 +160,47 @@ public static class WebApplicationExtensions
         {
             logger.LogDebug("Handling request for {Method} {Path} on system {SystemId}, module {ModuleId}", 
                 endpoint.Method, endpoint.Path, system.SystemId, module.ModuleId);
+
+            // Check for error simulation
+            var errorSimulationService = context.RequestServices.GetService<IErrorSimulationService>();
+            if (errorSimulationService != null)
+            {
+                // Convert IHeaderDictionary to Dictionary<string, string>
+                var headers = context.Request.Headers.ToDictionary(
+                    h => h.Key, 
+                    h => h.Value.FirstOrDefault() ?? string.Empty);
+
+                var errorConfig = await errorSimulationService.ShouldSimulateErrorAsync(
+                    system.SystemId, module.ModuleId, endpoint.Path, headers);
+
+                if (errorConfig != null)
+                {
+                    // Handle timeout simulation
+                    if (errorConfig.ErrorType == ErrorType.Timeout && errorConfig.DelayMs > 0)
+                    {
+                        await Task.Delay(errorConfig.DelayMs);
+                    }
+
+                    // Create error response
+                    var errorResponse = errorSimulationService.CreateErrorResponse(errorConfig);
+                    
+                    // Log the simulated error
+                    await errorSimulationService.LogSimulatedErrorAsync(
+                        system.SystemId, module.ModuleId, endpoint.Path, errorConfig, errorResponse);
+
+                    // Return appropriate HTTP status based on error type
+                    var statusCode = errorConfig.ErrorType switch
+                    {
+                        ErrorType.Timeout => StatusCodes.Status408RequestTimeout,
+                        ErrorType.Authorization => StatusCodes.Status401Unauthorized,
+                        ErrorType.Business => StatusCodes.Status400BadRequest,
+                        ErrorType.System => StatusCodes.Status500InternalServerError,
+                        _ => StatusCodes.Status500InternalServerError
+                    };
+
+                    return Results.Json(errorResponse, statusCode: statusCode);
+                }
+            }
 
             // Extract request body for POST/PUT requests
             object? requestData = null;

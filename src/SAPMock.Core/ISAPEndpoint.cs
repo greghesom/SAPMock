@@ -29,4 +29,9 @@ public interface ISAPEndpoint
     /// Gets the handler function that processes requests to this endpoint.
     /// </summary>
     Func<object, Task<object>> Handler { get; }
+    
+    /// <summary>
+    /// Gets the error simulation configurations for this endpoint.
+    /// </summary>
+    IEnumerable<ErrorSimulationConfig> ErrorSimulations { get; }
 }
