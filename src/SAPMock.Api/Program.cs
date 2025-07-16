@@ -1,6 +1,8 @@
 using SAPMock.ServiceDefaults;
 using SAPMock.Configuration;
+using SAPMock.Configuration.Handlers;
 using SAPMock.Core;
+using SAPMock.Data;
 using SAPMock.Api.Models;
 using SAPMock.Api.Services;
 using SAPMock.Api.Extensions;
@@ -18,9 +20,32 @@ builder.Services.Configure<SAPMockConfiguration>(
 builder.Services.AddSingleton<IConfigurationService>(provider =>
 {
     var config = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<SAPMockConfiguration>>();
-    return new ConfigurationService(config.Value);
+    return new ConfigurationService(config.Value, provider);
 });
 builder.Services.AddSingleton<ISAPSystemRegistry, SAPSystemRegistry>();
+
+// Register Mock Data Provider
+builder.Services.AddSingleton<IMockDataProvider>(provider =>
+{
+    var config = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<SAPMockConfiguration>>();
+    return new FileBasedMockDataProvider(config.Value.DataPath, config.Value.EnableExtensions);
+});
+
+// Register Handler Factory
+builder.Services.AddSingleton<HandlerFactory>();
+
+// Register Module Handlers
+builder.Services.AddTransient<MaterialsManagementHandler>(provider =>
+{
+    var mockDataProvider = provider.GetRequiredService<IMockDataProvider>();
+    return new MaterialsManagementHandler(mockDataProvider, "ERP01");
+});
+
+builder.Services.AddTransient<SalesDistributionHandler>(provider =>
+{
+    var mockDataProvider = provider.GetRequiredService<IMockDataProvider>();
+    return new SalesDistributionHandler(mockDataProvider, "ERP01");
+});
 
 // Register endpoint registration service as hosted service
 builder.Services.AddHostedService<EndpointRegistrationService>();

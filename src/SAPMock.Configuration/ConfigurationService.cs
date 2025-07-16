@@ -1,5 +1,7 @@
 ﻿using System.Text.Json;
 using SAPMock.Core;
+using SAPMock.Configuration.Handlers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace SAPMock.Configuration;
 
@@ -10,10 +12,12 @@ public class ConfigurationService : IConfigurationService
 {
     private readonly SAPMockConfiguration _configuration;
     private readonly JsonSerializerOptions _jsonOptions;
+    private readonly IServiceProvider _serviceProvider;
 
-    public ConfigurationService(SAPMockConfiguration configuration)
+    public ConfigurationService(SAPMockConfiguration configuration, IServiceProvider serviceProvider)
     {
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         _jsonOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -98,14 +102,25 @@ public class ConfigurationService : IConfigurationService
         {
             foreach (var moduleConfig in systemConfig.Modules.Where(m => m.Enabled))
             {
-                var endpoints = moduleConfig.Endpoints.Where(e => e.Enabled).Select(e => new SAPEndpoint
+                var handlerFactory = new HandlerFactory(_serviceProvider);
+                var handler = handlerFactory.CreateHandler(moduleConfig.ModuleId + "Handler", systemId);
+                
+                IEnumerable<ISAPEndpoint> endpoints;
+                if (handler != null)
                 {
-                    Path = e.Path,
-                    Method = e.Method,
-                    RequestType = typeof(object), // This would need to be resolved from type name
-                    ResponseType = typeof(object), // This would need to be resolved from type name
-                    Handler = async (request) => await Task.FromResult<object>(new { }) // Default handler
-                });
+                    endpoints = handler.GetEndpoints(systemId);
+                }
+                else
+                {
+                    endpoints = moduleConfig.Endpoints.Where(e => e.Enabled).Select(e => new SAPEndpoint
+                    {
+                        Path = e.Path,
+                        Method = e.Method,
+                        RequestType = typeof(object),
+                        ResponseType = typeof(object),
+                        Handler = async (request) => await Task.FromResult<object>(new { })
+                    });
+                }
                 
                 var module = new SAPModule
                 {
@@ -133,14 +148,25 @@ public class ConfigurationService : IConfigurationService
                     
                     if (moduleConfig != null && moduleConfig.Enabled && moduleConfig.SystemId == systemId)
                     {
-                        var endpoints = moduleConfig.Endpoints.Where(e => e.Enabled).Select(e => new SAPEndpoint
+                        var handlerFactory = new HandlerFactory(_serviceProvider);
+                        var handler = handlerFactory.CreateHandler(moduleConfig.ModuleId + "Handler", systemId);
+                        
+                        IEnumerable<ISAPEndpoint> endpoints;
+                        if (handler != null)
                         {
-                            Path = e.Path,
-                            Method = e.Method,
-                            RequestType = typeof(object), // This would need to be resolved from type name
-                            ResponseType = typeof(object), // This would need to be resolved from type name
-                            Handler = async (request) => await Task.FromResult<object>(new { }) // Default handler
-                        });
+                            endpoints = handler.GetEndpoints(systemId);
+                        }
+                        else
+                        {
+                            endpoints = moduleConfig.Endpoints.Where(e => e.Enabled).Select(e => new SAPEndpoint
+                            {
+                                Path = e.Path,
+                                Method = e.Method,
+                                RequestType = typeof(object),
+                                ResponseType = typeof(object),
+                                Handler = async (request) => await Task.FromResult<object>(new { })
+                            });
+                        }
                         
                         var module = new SAPModule
                         {

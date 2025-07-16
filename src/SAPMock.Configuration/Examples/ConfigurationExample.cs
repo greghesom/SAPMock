@@ -61,7 +61,7 @@ public static class ConfigurationExample
         };
 
         // Create configuration service
-        var configurationService = new ConfigurationService(configuration);
+        var configurationService = new ConfigurationService(configuration, null!);
 
         // Validate configuration
         bool isValid = await configurationService.ValidateConfigurationAsync();
