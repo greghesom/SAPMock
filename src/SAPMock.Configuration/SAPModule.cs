@@ -5,7 +5,7 @@ namespace SAPMock.Configuration;
 /// <summary>
 /// Concrete implementation of ISAPModule for configuration purposes.
 /// </summary>
-internal class SAPModule : ISAPModule
+public class SAPModule : ISAPModule
 {
     /// <summary>
     /// Gets the unique identifier for the SAP module.
