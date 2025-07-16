@@ -11,6 +11,9 @@
 *.sln.docstates
 *.env
 
+# SAP Mock Service - exclude developer-specific extension data
+data/extensions/
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 

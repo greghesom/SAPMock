@@ -1,0 +1,38 @@
+[
+  {
+    "materialNumber": "MATERIAL-TEST-001",
+    "description": "Test Material 1",
+    "materialType": "FERT",
+    "baseUnit": "EA",
+    "materialGroup": "TEST",
+    "weight": {
+      "gross": 2.5,
+      "net": 2.0,
+      "unit": "KG"
+    },
+    "dimensions": {
+      "length": 30,
+      "width": 15,
+      "height": 8,
+      "unit": "CM"
+    }
+  },
+  {
+    "materialNumber": "MATERIAL-TEST-002",
+    "description": "Test Material 2",
+    "materialType": "FERT",
+    "baseUnit": "EA",
+    "materialGroup": "TEST",
+    "weight": {
+      "gross": 0.5,
+      "net": 0.3,
+      "unit": "KG"
+    },
+    "dimensions": {
+      "length": 10,
+      "width": 5,
+      "height": 2,
+      "unit": "CM"
+    }
+  }
+]
