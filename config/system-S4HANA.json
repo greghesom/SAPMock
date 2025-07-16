@@ -1,0 +1,82 @@
+{
+  "systemId": "S4HANA",
+  "name": "SAP S/4HANA Environment",
+  "type": "S4HANA",
+  "enabled": true,
+  "connectionParameters": {
+    "server": "sap-s4hana.company.com",
+    "port": "443",
+    "client": "100",
+    "language": "EN",
+    "protocol": "https"
+  },
+  "modules": [
+    {
+      "moduleId": "MM",
+      "name": "Materials Management",
+      "systemId": "S4HANA",
+      "enabled": true,
+      "configFile": "module-S4HANA-MM.json",
+      "endpoints": [
+        {
+          "path": "/sap/opu/odata/sap/MM_MATERIAL_SRV/Materials",
+          "method": "GET",
+          "requestType": "object",
+          "responseType": "object",
+          "handlerType": "MaterialsManagementHandler",
+          "enabled": true
+        },
+        {
+          "path": "/sap/opu/odata/sap/MM_MATERIAL_SRV/Materials('{id}')",
+          "method": "GET",
+          "requestType": "object",
+          "responseType": "object",
+          "handlerType": "MaterialsManagementHandler",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "moduleId": "SD",
+      "name": "Sales & Distribution",
+      "systemId": "S4HANA",
+      "enabled": true,
+      "configFile": "module-S4HANA-SD.json",
+      "endpoints": [
+        {
+          "path": "/sap/opu/odata/sap/SD_CUSTOMER_SRV/Customers",
+          "method": "GET",
+          "requestType": "object",
+          "responseType": "object",
+          "handlerType": "SalesDistributionHandler",
+          "enabled": true
+        },
+        {
+          "path": "/sap/opu/odata/sap/SD_SALESORDER_SRV/SalesOrders",
+          "method": "GET",
+          "requestType": "object",
+          "responseType": "object",
+          "handlerType": "SalesDistributionHandler",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "moduleId": "FI",
+      "name": "Financial Accounting",
+      "systemId": "S4HANA",
+      "enabled": true,
+      "configFile": "module-S4HANA-FI.json",
+      "endpoints": [
+        {
+          "path": "/sap/opu/odata/sap/FI_GENERALLEDGER_SRV/GeneralLedger",
+          "method": "GET",
+          "requestType": "object",
+          "responseType": "object",
+          "handlerType": "DefaultHandler",
+          "enabled": true
+        }
+      ]
+    }
+  ]
+}

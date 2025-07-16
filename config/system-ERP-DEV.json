@@ -1,0 +1,81 @@
+{
+  "systemId": "ERP-DEV",
+  "name": "SAP ERP Development Environment",
+  "type": "ERP",
+  "enabled": true,
+  "connectionParameters": {
+    "server": "sap-erp-dev.company.com",
+    "port": "8000",
+    "client": "100",
+    "language": "EN"
+  },
+  "modules": [
+    {
+      "moduleId": "MM",
+      "name": "Materials Management",
+      "systemId": "ERP-DEV",
+      "enabled": true,
+      "configFile": "module-ERP-DEV-MM.json",
+      "endpoints": [
+        {
+          "path": "/sap/opu/rest/mm/materials",
+          "method": "GET",
+          "requestType": "object",
+          "responseType": "object",
+          "handlerType": "MaterialsManagementHandler",
+          "enabled": true
+        },
+        {
+          "path": "/sap/opu/rest/mm/materials/{id}",
+          "method": "GET",
+          "requestType": "object",
+          "responseType": "object",
+          "handlerType": "MaterialsManagementHandler",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "moduleId": "SD",
+      "name": "Sales & Distribution",
+      "systemId": "ERP-DEV",
+      "enabled": true,
+      "configFile": "module-ERP-DEV-SD.json",
+      "endpoints": [
+        {
+          "path": "/sap/opu/rest/sd/customers",
+          "method": "GET",
+          "requestType": "object",
+          "responseType": "object",
+          "handlerType": "SalesDistributionHandler",
+          "enabled": true
+        },
+        {
+          "path": "/sap/opu/rest/sd/sales-orders",
+          "method": "GET",
+          "requestType": "object",
+          "responseType": "object",
+          "handlerType": "SalesDistributionHandler",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "moduleId": "FI",
+      "name": "Financial Accounting",
+      "systemId": "ERP-DEV",
+      "enabled": true,
+      "configFile": "module-ERP-DEV-FI.json",
+      "endpoints": [
+        {
+          "path": "/sap/opu/rest/fi/general-ledger",
+          "method": "GET",
+          "requestType": "object",
+          "responseType": "object",
+          "handlerType": "DefaultHandler",
+          "enabled": true
+        }
+      ]
+    }
+  ]
+}

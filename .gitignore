@@ -13,6 +13,7 @@
 
 # SAP Mock Service - exclude developer-specific extension data
 data/extensions/
+testdata/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
