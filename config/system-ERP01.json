@@ -26,6 +26,47 @@
           "enabled": true
         }
       ]
+    },
+    {
+      "moduleId": "SD",
+      "name": "Sales & Distribution",
+      "systemId": "ERP01",
+      "enabled": true,
+      "configFile": "module-ERP01-SD.json",
+      "endpoints": [
+        {
+          "path": "/sap/opu/rest/sd/customers",
+          "method": "GET",
+          "requestType": "object",
+          "responseType": "object",
+          "handlerType": "SalesDistributionHandler",
+          "enabled": true
+        },
+        {
+          "path": "/sap/opu/rest/sd/sales-orders",
+          "method": "GET",
+          "requestType": "object",
+          "responseType": "object",
+          "handlerType": "SalesDistributionHandler",
+          "enabled": true
+        },
+        {
+          "path": "/sap/opu/rest/sd/deliveries",
+          "method": "GET",
+          "requestType": "object",
+          "responseType": "object",
+          "handlerType": "SalesDistributionHandler",
+          "enabled": true
+        },
+        {
+          "path": "/sap/opu/rest/sd/invoices",
+          "method": "GET",
+          "requestType": "object",
+          "responseType": "object",
+          "handlerType": "SalesDistributionHandler",
+          "enabled": true
+        }
+      ]
     }
   ]
 }
