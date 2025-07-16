@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{79315C94-0804-4682-9265-AFA0FB60D6CD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SAPMock.Core", "src\SAPMock.Core\SAPMock.Core.csproj", "{B8CB297B-9891-40B7-8EED-D2742A2A329F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SAPMock.Api", "src\SAPMock.Api\SAPMock.Api.csproj", "{C7A5F241-AEFB-484B-92B3-B9C1E24FA114}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SAPMock.Data", "src\SAPMock.Data\SAPMock.Data.csproj", "{7CCEC353-29F7-4FC4-8FAB-8E2A61DD4E5A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SAPMock.Configuration", "src\SAPMock.Configuration\SAPMock.Configuration.csproj", "{ECC0EF22-8EE7-4428-A91F-0F35EE70A03F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SAPMock.ServiceDefaults", "src\SAPMock.ServiceDefaults\SAPMock.ServiceDefaults.csproj", "{AFB464D9-65C8-448E-BF66-A3E452F71660}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SAPMock.AppHost", "Mock.AppHost\SAPMock.AppHost.csproj", "{7AC47C6D-74CB-44D4-9EAD-EA3790B9543E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B8CB297B-9891-40B7-8EED-D2742A2A329F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8CB297B-9891-40B7-8EED-D2742A2A329F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8CB297B-9891-40B7-8EED-D2742A2A329F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8CB297B-9891-40B7-8EED-D2742A2A329F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7A5F241-AEFB-484B-92B3-B9C1E24FA114}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7A5F241-AEFB-484B-92B3-B9C1E24FA114}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7A5F241-AEFB-484B-92B3-B9C1E24FA114}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7A5F241-AEFB-484B-92B3-B9C1E24FA114}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7CCEC353-29F7-4FC4-8FAB-8E2A61DD4E5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CCEC353-29F7-4FC4-8FAB-8E2A61DD4E5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CCEC353-29F7-4FC4-8FAB-8E2A61DD4E5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CCEC353-29F7-4FC4-8FAB-8E2A61DD4E5A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ECC0EF22-8EE7-4428-A91F-0F35EE70A03F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ECC0EF22-8EE7-4428-A91F-0F35EE70A03F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ECC0EF22-8EE7-4428-A91F-0F35EE70A03F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ECC0EF22-8EE7-4428-A91F-0F35EE70A03F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFB464D9-65C8-448E-BF66-A3E452F71660}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFB464D9-65C8-448E-BF66-A3E452F71660}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFB464D9-65C8-448E-BF66-A3E452F71660}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFB464D9-65C8-448E-BF66-A3E452F71660}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7AC47C6D-74CB-44D4-9EAD-EA3790B9543E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7AC47C6D-74CB-44D4-9EAD-EA3790B9543E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7AC47C6D-74CB-44D4-9EAD-EA3790B9543E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7AC47C6D-74CB-44D4-9EAD-EA3790B9543E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B8CB297B-9891-40B7-8EED-D2742A2A329F} = {79315C94-0804-4682-9265-AFA0FB60D6CD}
+		{C7A5F241-AEFB-484B-92B3-B9C1E24FA114} = {79315C94-0804-4682-9265-AFA0FB60D6CD}
+		{7CCEC353-29F7-4FC4-8FAB-8E2A61DD4E5A} = {79315C94-0804-4682-9265-AFA0FB60D6CD}
+		{ECC0EF22-8EE7-4428-A91F-0F35EE70A03F} = {79315C94-0804-4682-9265-AFA0FB60D6CD}
+		{AFB464D9-65C8-448E-BF66-A3E452F71660} = {79315C94-0804-4682-9265-AFA0FB60D6CD}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1B9C8BBB-7E83-49D3-98AC-AB6718A79FE3}
+	EndGlobalSection
+EndGlobal
