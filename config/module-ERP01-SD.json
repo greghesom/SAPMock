@@ -1,0 +1,185 @@
+{
+  "moduleId": "SD",
+  "name": "Sales & Distribution",
+  "systemId": "ERP01",
+  "enabled": true,
+  "configFile": "",
+  "endpoints": [
+    {
+      "path": "/sap/opu/rest/sd/customers",
+      "method": "GET",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/sd/customers",
+      "method": "POST",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/sd/customers/{id}",
+      "method": "GET",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/sd/customers/{id}",
+      "method": "PUT",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/sd/customers/{id}",
+      "method": "DELETE",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/sd/sales-orders",
+      "method": "GET",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/sd/sales-orders",
+      "method": "POST",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/sd/sales-orders/{id}",
+      "method": "GET",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/sd/sales-orders/{id}",
+      "method": "PUT",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/sd/sales-orders/{id}",
+      "method": "DELETE",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/sd/sales-orders/{id}/create-delivery",
+      "method": "POST",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/sd/deliveries",
+      "method": "GET",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/sd/deliveries",
+      "method": "POST",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/sd/deliveries/{id}",
+      "method": "GET",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/sd/deliveries/{id}",
+      "method": "PUT",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/sd/deliveries/{id}",
+      "method": "DELETE",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/sd/deliveries/{id}/create-invoice",
+      "method": "POST",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/sd/invoices",
+      "method": "GET",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/sd/invoices",
+      "method": "POST",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/sd/invoices/{id}",
+      "method": "GET",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/sd/invoices/{id}",
+      "method": "PUT",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    },
+    {
+      "path": "/sap/opu/rest/sd/invoices/{id}",
+      "method": "DELETE",
+      "requestType": "object",
+      "responseType": "object",
+      "handlerType": "SalesDistributionHandler",
+      "enabled": true
+    }
+  ]
+}
