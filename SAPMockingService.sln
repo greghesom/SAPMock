@@ -15,8 +15,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SAPMock.Configuration", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SAPMock.ServiceDefaults", "src\SAPMock.ServiceDefaults\SAPMock.ServiceDefaults.csproj", "{AFB464D9-65C8-448E-BF66-A3E452F71660}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SAPMock.AppHost", "Mock.AppHost\SAPMock.AppHost.csproj", "{7AC47C6D-74CB-44D4-9EAD-EA3790B9543E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,10 +41,6 @@ Global
 		{AFB464D9-65C8-448E-BF66-A3E452F71660}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AFB464D9-65C8-448E-BF66-A3E452F71660}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AFB464D9-65C8-448E-BF66-A3E452F71660}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7AC47C6D-74CB-44D4-9EAD-EA3790B9543E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7AC47C6D-74CB-44D4-9EAD-EA3790B9543E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7AC47C6D-74CB-44D4-9EAD-EA3790B9543E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7AC47C6D-74CB-44D4-9EAD-EA3790B9543E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
