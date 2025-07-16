@@ -2,6 +2,8 @@ using SAPMock.ServiceDefaults;
 using SAPMock.Configuration;
 using SAPMock.Core;
 using SAPMock.Api.Models;
+using SAPMock.Api.Services;
+using SAPMock.Api.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +22,9 @@ builder.Services.AddSingleton<IConfigurationService>(provider =>
 });
 builder.Services.AddSingleton<ISAPSystemRegistry, SAPSystemRegistry>();
 
+// Register endpoint registration service as hosted service
+builder.Services.AddHostedService<EndpointRegistrationService>();
+
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -35,6 +40,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Register dynamic SAP endpoints
+await app.RegisterSAPEndpoints();
 
 // SAP Mock endpoints
 app.MapGet("/api/systems", async (ISAPSystemRegistry registry) =>
