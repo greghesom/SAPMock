@@ -125,18 +125,103 @@ curl -H "X-SAP-Mock-Error: System" http://localhost:5204/api/ERP01/MM/materials/
 
 ## 🏗️ Architecture
 
+### High-Level Architecture
 ```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   Your Service  │────▶│  SAP Mock API   │────▶│   Mock Data     │
-│  (.NET Aspire)  │     │  (.NET Core 8)  │     │  (JSON Files)   │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-                               │
-                               ▼
-                        ┌─────────────────┐
-                        │  Configuration  │
-                        │  (Systems/Mods) │
-                        └─────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          .NET Aspire AppHost                                │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐              │
+│  │   Your Service  │  │ Example Service │  │   Other Apps    │              │
+│  │                 │  │                 │  │                 │              │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘              │
+│           │                     │                     │                     │
+│           └─────────────────────┼─────────────────────┘                     │
+│                                 │                                           │
+│                                 ▼                                           │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │                    SAP Mock API (.NET Core 8)                          │ │
+│  │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐         │ │
+│  │  │       MM        │  │       SD        │  │       FI        │         │ │
+│  │  │   Materials     │  │ Sales & Distrib │  │   Financial     │         │ │
+│  │  │  Management     │  │                 │  │  Accounting     │         │ │
+│  │  └─────────────────┘  └─────────────────┘  └─────────────────┘         │ │
+│  │                                                                         │ │
+│  │  ┌─────────────────────────────────────────────────────────────────────┐ │ │
+│  │  │                Error Simulation Engine                             │ │ │
+│  │  │  • Timeout Errors    • Business Errors                            │ │ │
+│  │  │  • Auth Errors       • System Errors                              │ │ │
+│  │  └─────────────────────────────────────────────────────────────────────┘ │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+│                                 │                                           │
+│                                 ▼                                           │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │                    Configuration System                                 │ │
+│  │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐         │ │
+│  │  │   System Config │  │  Module Config  │  │ Endpoint Config │         │ │
+│  │  │   (ERP01, etc.) │  │   (MM, SD, FI)  │  │   (Paths, etc.) │         │ │
+│  │  └─────────────────┘  └─────────────────┘  └─────────────────┘         │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+│                                 │                                           │
+│                                 ▼                                           │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │                     Mock Data Provider                                  │ │
+│  │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐         │ │
+│  │  │   Extensions    │  │    Profiles     │  │     Common      │         │ │
+│  │  │  (Developer     │  │   (Environment  │  │   (Baseline     │         │ │
+│  │  │   Overrides)    │  │    Specific)    │  │     Data)       │         │ │
+│  │  └─────────────────┘  └─────────────────┘  └─────────────────┘         │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
+
+### Component Details
+
+#### 1. SAP Mock API
+- **Framework**: ASP.NET Core 8 Web API
+- **Purpose**: Exposes SAP-like REST endpoints
+- **Port**: 5204 (HTTP), 7000 (HTTPS)
+- **Features**: Dynamic endpoint registration, error simulation, health checks
+
+#### 2. Module Handlers
+- **Materials Management (MM)**: Material CRUD operations
+- **Sales & Distribution (SD)**: Customer, Sales Order, Delivery, Invoice operations
+- **Financial Accounting (FI)**: General ledger and financial data
+- **Extensible**: Easy to add new modules
+
+#### 3. Configuration System
+- **System Configs**: Define SAP systems (ERP01, S4HANA, etc.)
+- **Module Configs**: Define available modules per system
+- **Endpoint Configs**: Define paths, methods, and handlers
+- **File-based**: JSON configuration files
+
+#### 4. Mock Data Provider
+- **Layered Architecture**: Extensions → Profiles → Common
+- **File-based Storage**: JSON files organized by system/module
+- **Caching**: Built-in caching for performance
+- **Fallback Logic**: Automatic fallback between layers
+
+#### 5. Error Simulation Engine
+- **Multiple Trigger Methods**: Headers, configuration files, probability-based
+- **SAP-style Responses**: Authentic error response formats
+- **Comprehensive Logging**: Detailed error simulation logs
+- **Configurable**: Per-endpoint error configurations
+
+### Data Flow
+
+1. **Request**: Client sends HTTP request to SAP Mock API
+2. **Routing**: API routes request to appropriate module handler
+3. **Error Check**: Error simulation engine checks for configured errors
+4. **Data Retrieval**: Mock data provider fetches data from layered storage
+5. **Response**: Handler returns SAP-formatted response
+6. **Logging**: Request/response logged for debugging
+
+### Technology Stack
+
+- **.NET 8**: Core framework
+- **ASP.NET Core**: Web API framework
+- **.NET Aspire**: Orchestration and service management
+- **System.Text.Json**: JSON serialization
+- **Microsoft.Extensions.Logging**: Logging framework
+- **Microsoft.Extensions.Configuration**: Configuration management
 
 ## 💡 Use Cases
 
@@ -147,20 +232,92 @@ curl -H "X-SAP-Mock-Error: System" http://localhost:5204/api/ERP01/MM/materials/
 - **Performance Testing** - Load test without impacting SAP systems
 - **Error Scenario Testing** - Simulate SAP errors, timeouts, and failures with configurable probabilities
 
+## 🏃 Getting Started Guide
+
+### Prerequisites
+- .NET 8.0 SDK or later
+- Visual Studio 2022 or VS Code (optional)
+- Git for version control
+
+### Step 1: Clone and Setup
+```bash
+# Clone the repository
+git clone https://github.com/greghesom/SAPMock.git
+cd SAPMock
+
+# Restore dependencies
+dotnet restore
+
+# Build the solution
+dotnet build
+```
+
+### Step 2: Start the Services
+```bash
+# Option 1: Using .NET Aspire (Recommended)
+dotnet run --project src/SAPMock.AppHost
+
+# Option 2: Run API directly
+dotnet run --project src/SAPMock.Api
+```
+
+### Step 3: Verify Installation
+```bash
+# Check service health
+curl http://localhost:5204/api/health
+
+# Get available systems
+curl http://localhost:5204/api/systems
+
+# Test a sample endpoint
+curl http://localhost:5204/api/ERP01/SD/customers
+```
+
+### Step 4: Explore the API
+- **Aspire Dashboard**: http://localhost:15005 (when using AppHost)
+- **API Base URL**: http://localhost:5204
+- **Health Check**: http://localhost:5204/api/health
+- **Systems Info**: http://localhost:5204/api/systems
+
+### Step 5: Test Error Simulation
+```bash
+# Test timeout error
+curl -H "X-SAP-Mock-Error: Timeout" http://localhost:5204/api/ERP01/MM/materials/MATERIAL-001
+
+# Test business error
+curl -H "X-SAP-Mock-Error: Business" http://localhost:5204/api/ERP01/SD/customers/INVALID-ID
+```
+
+### Step 6: Customize Data (Optional)
+```bash
+# Create your own data override
+mkdir -p data/extensions/ERP01/MM
+cp data/common/ERP01/MM/materials.json data/extensions/ERP01/MM/materials.json
+
+# Edit the extension file with your custom data
+# The service will automatically use your extension data
+```
+
+### Next Steps
+- Review the [Complete API Reference](#complete-api-reference) for detailed endpoint documentation
+- Check the [Configuration Guide](CONFIGURATION.md) for advanced configuration options
+- Explore [Error Simulation](ERROR_SIMULATION.md) for testing failure scenarios
+- See [Adding New Modules](#adding-new-modules) to extend the service
+
 ## 🏃 Quick Start
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourorg/sap-mock-service.git
+git clone https://github.com/greghesom/SAPMock.git
 
 # Start with Aspire
-dotnet run --project ./AppHost
+dotnet run --project ./src/SAPMock.AppHost
 
 # Access the mock service
-curl http://localhost:5000/api/ERP-DEV/MM/materials/MATERIAL-001
+curl http://localhost:5204/api/ERP01/MM/materials/MATERIAL-001
 
 # Test error simulation
-curl -H "X-SAP-Mock-Error: Timeout" http://localhost:5000/api/ERP-DEV/MM/materials/MATERIAL-001
+curl -H "X-SAP-Mock-Error: Timeout" http://localhost:5204/api/ERP01/MM/materials/MATERIAL-001
 ```
 
 ## 📦 What's Included
@@ -173,9 +330,63 @@ curl -H "X-SAP-Mock-Error: Timeout" http://localhost:5000/api/ERP-DEV/MM/materia
 - Aspire orchestration setup
 - Comprehensive documentation and examples
 
+## 📚 API Documentation
+
+### Available Endpoints by Module
+
+#### Materials Management (MM)
+- `GET /api/{systemId}/MM/materials` - List all materials
+- `GET /api/{systemId}/MM/materials/{id}` - Get specific material
+- `POST /api/{systemId}/MM/materials` - Create new material
+- `PUT /api/{systemId}/MM/materials/{id}` - Update material
+- `DELETE /api/{systemId}/MM/materials/{id}` - Delete material
+
+#### Sales & Distribution (SD)
+- `GET /api/{systemId}/SD/customers` - List all customers
+- `GET /api/{systemId}/SD/customers/{id}` - Get specific customer
+- `POST /api/{systemId}/SD/customers` - Create new customer
+- `PUT /api/{systemId}/SD/customers/{id}` - Update customer
+- `DELETE /api/{systemId}/SD/customers/{id}` - Delete customer
+- `GET /api/{systemId}/SD/sales-orders` - List all sales orders
+- `GET /api/{systemId}/SD/sales-orders/{id}` - Get specific sales order
+- `POST /api/{systemId}/SD/sales-orders` - Create new sales order
+- `PUT /api/{systemId}/SD/sales-orders/{id}` - Update sales order
+- `DELETE /api/{systemId}/SD/sales-orders/{id}` - Delete sales order
+- `GET /api/{systemId}/SD/deliveries` - List all deliveries
+- `GET /api/{systemId}/SD/deliveries/{id}` - Get specific delivery
+- `POST /api/{systemId}/SD/deliveries` - Create new delivery
+- `PUT /api/{systemId}/SD/deliveries/{id}` - Update delivery
+- `DELETE /api/{systemId}/SD/deliveries/{id}` - Delete delivery
+- `GET /api/{systemId}/SD/invoices` - List all invoices
+- `GET /api/{systemId}/SD/invoices/{id}` - Get specific invoice
+- `POST /api/{systemId}/SD/invoices` - Create new invoice
+- `PUT /api/{systemId}/SD/invoices/{id}` - Update invoice
+- `DELETE /api/{systemId}/SD/invoices/{id}` - Delete invoice
+- `POST /api/{systemId}/SD/sales-orders/{id}/create-delivery` - Create delivery from sales order
+- `POST /api/{systemId}/SD/deliveries/{id}/create-invoice` - Create invoice from delivery
+
+#### Financial Accounting (FI)
+- `GET /api/{systemId}/FI/general-ledger` - Get general ledger data
+
+See the [Complete API Reference](#complete-api-reference) below for detailed request/response examples.
+
 ## 🤝 Contributing
 
-This service is designed to be extended by development teams. Add your own modules, customize responses, and share improvements back to the team. See our [Contributing Guide](CONTRIBUTING.md) for details.
+This service is designed to be extended by development teams. Add your own modules, customize responses, and share improvements back to the team.
+
+### Quick Module Addition
+
+1. **Create Handler**: Implement `ISAPModuleHandler` interface
+2. **Add Mock Data**: Create JSON files in `data/common/{system}/{module}/`
+3. **Register Module**: Add to system configuration files
+4. **Test**: Verify endpoints work correctly
+
+See our comprehensive [Contributing Guide](CONTRIBUTING.md) for detailed instructions on:
+- Creating new modules and handlers
+- Adding mock data and configurations
+- Implementing error simulation
+- Testing and code quality guidelines
+- Contributing back to the project
 
 ## 📄 License
 
@@ -858,3 +1069,599 @@ public class SAPMockLoggingMiddleware
    - Include error simulation in automated testing pipelines
    - Monitor error simulation logs for analysis
    - Test error recovery mechanisms regularly
+
+---
+
+# Complete API Reference
+
+## Materials Management (MM) Module
+
+### Get Material
+**GET** `/api/{systemId}/MM/materials/{id}`
+
+Get a specific material by ID.
+
+**Example Request:**
+```bash
+curl -X GET "http://localhost:5204/api/ERP01/MM/materials/MATERIAL-001" \
+  -H "Content-Type: application/json"
+```
+
+**Example Response:**
+```json
+{
+  "materialNumber": "MATERIAL-001",
+  "description": "Common Test Material 1",
+  "materialType": "FERT",
+  "baseUnit": "EA",
+  "materialGroup": "01",
+  "weight": {
+    "gross": 10.5,
+    "net": 10.0,
+    "unit": "KG"
+  },
+  "dimensions": {
+    "length": 100,
+    "width": 50,
+    "height": 30,
+    "unit": "CM"
+  }
+}
+```
+
+### List Materials
+**GET** `/api/{systemId}/MM/materials`
+
+Get all materials.
+
+**Example Request:**
+```bash
+curl -X GET "http://localhost:5204/api/ERP01/MM/materials" \
+  -H "Content-Type: application/json"
+```
+
+**Example Response:**
+```json
+[
+  {
+    "materialNumber": "MATERIAL-001",
+    "description": "Common Test Material 1",
+    "materialType": "FERT",
+    "baseUnit": "EA",
+    "materialGroup": "01"
+  },
+  {
+    "materialNumber": "MATERIAL-002",
+    "description": "Common Test Material 2",
+    "materialType": "FERT",
+    "baseUnit": "EA",
+    "materialGroup": "02"
+  }
+]
+```
+
+### Create Material
+**POST** `/api/{systemId}/MM/materials`
+
+Create a new material.
+
+**Example Request:**
+```bash
+curl -X POST "http://localhost:5204/api/ERP01/MM/materials" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "materialNumber": "MATERIAL-NEW",
+    "description": "New Test Material",
+    "materialType": "FERT",
+    "baseUnit": "EA",
+    "materialGroup": "01",
+    "weight": {
+      "gross": 15.0,
+      "net": 14.5,
+      "unit": "KG"
+    }
+  }'
+```
+
+**Example Response:**
+```json
+{
+  "materialNumber": "MATERIAL-NEW",
+  "description": "New Test Material",
+  "materialType": "FERT",
+  "baseUnit": "EA",
+  "materialGroup": "01",
+  "weight": {
+    "gross": 15.0,
+    "net": 14.5,
+    "unit": "KG"
+  },
+  "created": true,
+  "timestamp": "2024-01-01T12:00:00Z"
+}
+```
+
+### Update Material
+**PUT** `/api/{systemId}/MM/materials/{id}`
+
+Update an existing material.
+
+**Example Request:**
+```bash
+curl -X PUT "http://localhost:5204/api/ERP01/MM/materials/MATERIAL-001" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "description": "Updated Test Material",
+    "materialType": "FERT",
+    "baseUnit": "EA",
+    "materialGroup": "01"
+  }'
+```
+
+### Delete Material
+**DELETE** `/api/{systemId}/MM/materials/{id}`
+
+Delete a material.
+
+**Example Request:**
+```bash
+curl -X DELETE "http://localhost:5204/api/ERP01/MM/materials/MATERIAL-001"
+```
+
+## Sales & Distribution (SD) Module
+
+### Get Customer
+**GET** `/api/{systemId}/SD/customers/{id}`
+
+Get a specific customer by ID.
+
+**Example Request:**
+```bash
+curl -X GET "http://localhost:5204/api/ERP01/SD/customers/CUST001" \
+  -H "Content-Type: application/json"
+```
+
+**Example Response:**
+```json
+{
+  "customerNumber": "CUST001",
+  "name": "ABC Corporation",
+  "name2": "Global Division",
+  "searchTerm": "ABC CORP",
+  "city": "New York",
+  "postalCode": "10001",
+  "country": "US",
+  "region": "NY",
+  "street": "123 Main Street",
+  "customerGroup": "Z001",
+  "salesOrganization": "1000",
+  "distributionChannel": "10",
+  "division": "00",
+  "currency": "USD",
+  "paymentTerms": "NET30",
+  "creditLimit": 100000.00,
+  "telephone": "+1-555-123-4567",
+  "email": "orders@abccorp.com",
+  "createdOn": "2024-01-15T10:00:00Z",
+  "createdBy": "SYSTEM",
+  "lastChangedOn": "2024-01-15T10:00:00Z",
+  "lastChangedBy": "SYSTEM",
+  "deletionFlag": false,
+  "blockedFlag": false
+}
+```
+
+### List Customers
+**GET** `/api/{systemId}/SD/customers`
+
+Get all customers.
+
+**Example Request:**
+```bash
+curl -X GET "http://localhost:5204/api/ERP01/SD/customers" \
+  -H "Content-Type: application/json"
+```
+
+### Create Customer
+**POST** `/api/{systemId}/SD/customers`
+
+Create a new customer.
+
+**Example Request:**
+```bash
+curl -X POST "http://localhost:5204/api/ERP01/SD/customers" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "New Customer Corp",
+    "city": "Boston",
+    "postalCode": "02101",
+    "country": "US",
+    "region": "MA",
+    "street": "456 New Street",
+    "customerGroup": "Z001",
+    "salesOrganization": "1000",
+    "distributionChannel": "10",
+    "division": "00",
+    "currency": "USD",
+    "paymentTerms": "NET30",
+    "creditLimit": 50000.00,
+    "telephone": "+1-555-000-0000",
+    "email": "contact@newcustomer.com"
+  }'
+```
+
+### Sales Orders
+
+#### Get Sales Order
+**GET** `/api/{systemId}/SD/sales-orders/{id}`
+
+Get a specific sales order by ID.
+
+**Example Request:**
+```bash
+curl -X GET "http://localhost:5204/api/ERP01/SD/sales-orders/SO001" \
+  -H "Content-Type: application/json"
+```
+
+#### Create Sales Order
+**POST** `/api/{systemId}/SD/sales-orders`
+
+Create a new sales order.
+
+**Example Request:**
+```bash
+curl -X POST "http://localhost:5204/api/ERP01/SD/sales-orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customerNumber": "CUST001",
+    "salesOrganization": "1000",
+    "distributionChannel": "10",
+    "division": "00",
+    "orderType": "TA",
+    "items": [
+      {
+        "materialNumber": "MATERIAL-001",
+        "quantity": 10,
+        "unit": "EA",
+        "plant": "1000"
+      }
+    ]
+  }'
+```
+
+#### Create Delivery from Sales Order
+**POST** `/api/{systemId}/SD/sales-orders/{id}/create-delivery`
+
+Create a delivery document from a sales order.
+
+**Example Request:**
+```bash
+curl -X POST "http://localhost:5204/api/ERP01/SD/sales-orders/SO001/create-delivery" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "deliveryDate": "2024-01-15",
+    "shippingPoint": "1000"
+  }'
+```
+
+### Deliveries
+
+#### Get Delivery
+**GET** `/api/{systemId}/SD/deliveries/{id}`
+
+Get a specific delivery by ID.
+
+#### Create Invoice from Delivery
+**POST** `/api/{systemId}/SD/deliveries/{id}/create-invoice`
+
+Create an invoice document from a delivery.
+
+**Example Request:**
+```bash
+curl -X POST "http://localhost:5204/api/ERP01/SD/deliveries/DEL001/create-invoice" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "invoiceDate": "2024-01-16",
+    "billingType": "F2"
+  }'
+```
+
+## Financial Accounting (FI) Module
+
+### Get General Ledger
+**GET** `/api/{systemId}/FI/general-ledger`
+
+Get general ledger data.
+
+**Example Request:**
+```bash
+curl -X GET "http://localhost:5204/api/ERP01/FI/general-ledger" \
+  -H "Content-Type: application/json"
+```
+
+## Error Simulation Examples
+
+### Force Timeout Error
+```bash
+curl -H "X-SAP-Mock-Error: Timeout" \
+  "http://localhost:5204/api/ERP01/MM/materials/MATERIAL-001"
+```
+
+### Force Business Error with Custom Message
+```bash
+curl -H 'X-SAP-Mock-Error: {"ErrorType":2,"CustomMessage":"Material validation failed","SAPErrorCode":"MM_VALIDATION_ERROR"}' \
+  "http://localhost:5204/api/ERP01/MM/materials/INVALID-MATERIAL"
+```
+
+### Test Authorization Error
+```bash
+curl -H "X-SAP-Mock-Error: Authorization" \
+  "http://localhost:5204/api/ERP01/SD/customers/CUST001"
+```
+
+## System Information
+
+### Get Available Systems
+**GET** `/api/systems`
+
+Get all configured SAP systems.
+
+**Example Request:**
+```bash
+curl -X GET "http://localhost:5204/api/systems" \
+  -H "Content-Type: application/json"
+```
+
+### Health Check
+**GET** `/api/health`
+
+Check service health status.
+
+**Example Request:**
+```bash
+curl -X GET "http://localhost:5204/api/health"
+```
+
+**Example Response:**
+```json
+{
+  "status": "healthy",
+  "timestamp": "2024-01-01T12:00:00Z",
+  "systems": {
+    "ERP01": true,
+    "ERP-DEV": true,
+    "ERP-PROD": true,
+    "S4HANA": true
+  }
+}
+```
+
+## Adding New Modules
+
+### Step 1: Create Module Handler
+
+Create a new handler class implementing `ISAPModuleHandler`:
+
+```csharp
+public class YourModuleHandler : ISAPModuleHandler
+{
+    private readonly IMockDataProvider _mockDataProvider;
+    private readonly string _systemId;
+
+    public YourModuleHandler(IMockDataProvider mockDataProvider, string systemId)
+    {
+        _mockDataProvider = mockDataProvider;
+        _systemId = systemId;
+    }
+
+    public IEnumerable<ISAPEndpoint> GetEndpoints(string systemId)
+    {
+        return new List<ISAPEndpoint>
+        {
+            new SAPEndpoint
+            {
+                Path = "/your-entity/{id}",
+                Method = "GET",
+                RequestType = typeof(object),
+                ResponseType = typeof(YourEntityResponse),
+                Handler = GetYourEntityHandler
+            }
+            // Add more endpoints as needed
+        };
+    }
+
+    private async Task<object> GetYourEntityHandler(HttpRequest request)
+    {
+        // Your implementation here
+        var id = request.RouteValues["id"]?.ToString();
+        var entity = await _mockDataProvider.GetDataAsync<YourEntity>(
+            $"{_systemId}/YourModule/{id}"
+        );
+        return entity ?? new { error = "Entity not found" };
+    }
+}
+```
+
+### Step 2: Register Module in Configuration
+
+Add your module to the system configuration file:
+
+```json
+{
+  "systemId": "ERP01",
+  "modules": [
+    {
+      "moduleId": "YOUR_MODULE",
+      "name": "Your Module Name",
+      "systemId": "ERP01",
+      "enabled": true,
+      "endpoints": [
+        {
+          "path": "/your-entity/{id}",
+          "method": "GET",
+          "requestType": "object",
+          "responseType": "YourEntityResponse",
+          "handlerType": "YourModuleHandler",
+          "enabled": true
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Step 3: Add Mock Data
+
+Create mock data files in the appropriate directory:
+
+```
+data/
+├── common/
+│   └── ERP01/
+│       └── YOUR_MODULE/
+│           └── your-entity.json
+```
+
+### Step 4: Register Handler in DI Container
+
+Add your handler to the dependency injection container:
+
+```csharp
+// In Program.cs or Startup.cs
+services.AddScoped<YourModuleHandler>();
+```
+
+## Mock Data Structure and Conventions
+
+### Directory Structure
+```
+data/
+├── common/                    # Shared baseline data
+│   └── {systemId}/           # e.g., ERP01, ERP-DEV
+│       └── {moduleId}/       # e.g., MM, SD, FI
+│           └── {entity}.json # e.g., materials.json
+├── profiles/                  # Environment-specific data
+│   └── {profile}/            # e.g., development, test
+│       └── {systemId}/
+│           └── {moduleId}/
+│               └── {entity}.json
+└── extensions/                # Developer-specific overrides
+    └── {systemId}/
+        └── {moduleId}/
+            └── {entity}.json
+```
+
+### Data Loading Priority
+1. **Extensions** (if enabled) - Developer-specific overrides
+2. **Profiles** - Environment-specific data
+3. **Common** - Shared baseline data
+
+### Naming Conventions
+- **System IDs**: Use UPPERCASE with hyphens (e.g., ERP01, ERP-DEV, S4HANA)
+- **Module IDs**: Use SAP standard module codes (MM, SD, FI, etc.)
+- **Entity Names**: Use lowercase with hyphens (e.g., materials.json, sales-orders.json)
+- **Field Names**: Use camelCase for consistency with JSON standards
+
+### Data Format Guidelines
+- All dates should be in ISO 8601 format
+- Use consistent field naming across entities
+- Include both business keys and technical keys
+- Provide realistic test data that mimics SAP structures
+
+## Troubleshooting
+
+### Common Issues
+
+#### 1. Service Not Starting
+**Symptom**: Service fails to start or throws exceptions during startup
+
+**Solutions**:
+- Check that all required dependencies are installed: `dotnet restore`
+- Verify configuration files are valid JSON
+- Check that data directory exists and is accessible
+- Review application logs for specific error messages
+
+#### 2. Data Not Loading
+**Symptom**: Endpoints return empty results or 404 errors
+
+**Solutions**:
+- Verify data files exist in the correct directory structure
+- Check JSON file format is valid
+- Ensure file names match expected patterns
+- Verify data path configuration is correct
+- Check that EnableExtensions setting matches your setup
+
+#### 3. Endpoints Not Found
+**Symptom**: API calls return 404 "Not Found" errors
+
+**Solutions**:
+- Verify the endpoint URL format: `/api/{systemId}/{moduleId}/{entity}`
+- Check that the system and module are configured in configuration files
+- Ensure the service is running on the expected port
+- Verify the system ID and module ID are correct
+
+#### 4. Error Simulation Not Working
+**Symptom**: Error simulation headers are ignored
+
+**Solutions**:
+- Check header format: `X-SAP-Mock-Error: {ErrorType}` or JSON format
+- Verify error type is valid (Timeout, Authorization, Business, System)
+- Ensure error simulation is enabled in configuration
+- Check error configuration files if using probability-based errors
+
+#### 5. Configuration Changes Not Applied
+**Symptom**: Configuration changes don't take effect
+
+**Solutions**:
+- Restart the service after configuration changes
+- Check configuration file syntax is valid JSON
+- Verify environment variables are set correctly
+- Ensure configuration precedence is correct (command line > env vars > files)
+
+#### 6. Performance Issues
+**Symptom**: Slow response times or high memory usage
+
+**Solutions**:
+- Check data file sizes - large files may cause performance issues
+- Verify caching is enabled in the data provider
+- Monitor memory usage and consider reducing data set size
+- Check for file system permission issues
+
+### Debug Configuration
+
+Enable detailed logging to troubleshoot issues:
+
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "SAPMock": "Debug",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  }
+}
+```
+
+### Getting Help
+
+1. **Check Logs**: Application logs contain detailed error information
+2. **Verify Configuration**: Use the `/health` endpoint to check service status
+3. **Test with Curl**: Use the provided curl examples to test endpoints
+4. **Review Documentation**: Check this README and individual module documentation
+5. **Check GitHub Issues**: Look for similar issues in the repository
+
+### Performance Optimization
+
+1. **Data File Size**: Keep individual JSON files under 1MB for optimal performance
+2. **Caching**: Enable caching in the data provider for frequently accessed data
+3. **Extensions**: Disable extensions in production if not needed
+4. **Selective Loading**: Use profiles to load only necessary data for specific environments
+
+### Development Tips
+
+1. **Use Extensions**: Create extension files for your specific test scenarios
+2. **Version Control**: Include common data in version control, exclude extensions
+3. **Environment Separation**: Use different profiles for different environments
+4. **Test Data**: Create realistic test data that matches your SAP system structure
+5. **Documentation**: Document any custom data structures or configurations
