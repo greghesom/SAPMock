@@ -138,7 +138,7 @@ curl -H "X-SAP-Mock-Error: System" http://localhost:5204/api/ERP01/MM/materials/
 │                                 │                                           │
 │                                 ▼                                           │
 │  ┌─────────────────────────────────────────────────────────────────────────┐ │
-│  │                    SAP Mock API (.NET Core 8)                          │ │
+│  │                    SAP Mock API (.NET Core 9)                          │ │
 │  │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐         │ │
 │  │  │       MM        │  │       SD        │  │       FI        │         │ │
 │  │  │   Materials     │  │ Sales & Distrib │  │   Financial     │         │ │
@@ -176,7 +176,7 @@ curl -H "X-SAP-Mock-Error: System" http://localhost:5204/api/ERP01/MM/materials/
 ### Component Details
 
 #### 1. SAP Mock API
-- **Framework**: ASP.NET Core 8 Web API
+- **Framework**: ASP.NET Core 9 Web API
 - **Purpose**: Exposes SAP-like REST endpoints
 - **Port**: 5204 (HTTP), 7000 (HTTPS)
 - **Features**: Dynamic endpoint registration, error simulation, health checks
@@ -216,7 +216,7 @@ curl -H "X-SAP-Mock-Error: System" http://localhost:5204/api/ERP01/MM/materials/
 
 ### Technology Stack
 
-- **.NET 8**: Core framework
+- **.NET 9**: Core framework
 - **ASP.NET Core**: Web API framework
 - **.NET Aspire**: Orchestration and service management
 - **System.Text.Json**: JSON serialization
@@ -235,7 +235,7 @@ curl -H "X-SAP-Mock-Error: System" http://localhost:5204/api/ERP01/MM/materials/
 ## 🏃 Getting Started Guide
 
 ### Prerequisites
-- .NET 8.0 SDK or later
+- .NET 9.0 SDK or later
 - Visual Studio 2022 or VS Code (optional)
 - Git for version control
 
