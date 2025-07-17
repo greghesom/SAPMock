@@ -13,9 +13,115 @@ The SAP Mock Service provides a flexible, configurable solution for simulating S
 - **Layered Data Management** - Shared common data with developer-specific overrides
 - **Dynamic Configuration** - Switch between data sets and configurations via Aspire
 - **SAP-Authentic Responses** - Mimics real SAP response formats and behaviors
-- **Error Simulation** - Test failure scenarios and edge cases
+- **Error Simulation** - Test failure scenarios and edge cases with configurable error types and probabilities
 - **Full Aspire Integration** - Seamless orchestration with dependent services
 - **File-Based Mock Data** - Easy to version control and share across teams
+
+## 🔧 Error Simulation
+
+Test how your applications handle various SAP integration failure scenarios with comprehensive error simulation capabilities.
+
+### Error Types and HTTP Status Codes
+
+- **Timeout** (408): Simulates request timeouts with configurable delays
+- **Authorization** (401): Simulates authentication/authorization failures  
+- **Business** (400): Simulates business logic validation errors
+- **System** (500): Simulates system-level errors
+
+### Usage Examples
+
+#### Force Errors with X-SAP-Mock-Error Header
+
+```bash
+# Simple error type
+curl -H "X-SAP-Mock-Error: Timeout" http://localhost:5204/api/ERP01/MM/materials/MATERIAL-001
+
+# JSON configuration for advanced scenarios
+curl -H 'X-SAP-Mock-Error: {"ErrorType":2,"CustomMessage":"Invalid material ID","SAPErrorCode":"MM_INVALID_ID"}' \
+  http://localhost:5204/api/ERP01/MM/materials/MATERIAL-001
+```
+
+#### Probability-based Error Configuration
+
+Create configuration files in `data/errors/{systemId}/{moduleId}/` directory:
+
+**Example**: `data/errors/ERP01/MM/_materials_{id}.json`
+```json
+[
+  {
+    "ErrorType": 0,
+    "Probability": 0.1,
+    "DelayMs": 5000,
+    "CustomMessage": "Material service timeout",
+    "SAPErrorCode": "MM_TIMEOUT",
+    "AdditionalDetails": {
+      "service": "MaterialService",
+      "operation": "GetMaterial"
+    }
+  },
+  {
+    "ErrorType": 2,
+    "Probability": 0.05,
+    "DelayMs": 0,
+    "CustomMessage": "Material not found in system",
+    "SAPErrorCode": "MM_NOT_FOUND",
+    "AdditionalDetails": {
+      "reason": "Material ID does not exist",
+      "suggested_action": "Check material ID and try again"
+    }
+  }
+]
+```
+
+### SAP-style Error Response Format
+
+When an error is simulated, responses follow SAP conventions:
+
+```json
+{
+  "Code": "MM_TIMEOUT",
+  "Message": "Material service timeout",
+  "Severity": "Error",
+  "Category": "Technical",
+  "Details": {
+    "service": "MaterialService",
+    "operation": "GetMaterial",
+    "timeout_ms": 5000
+  },
+  "Timestamp": "2024-01-01T12:00:00.000Z"
+}
+```
+
+### Error Configuration Reference
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `ErrorType` | int | Error type: 0=Timeout, 1=Authorization, 2=Business, 3=System |
+| `Probability` | double | Probability of error occurrence (0.0 to 1.0) |
+| `DelayMs` | int | Delay in milliseconds before response |
+| `CustomMessage` | string | Custom error message |
+| `SAPErrorCode` | string | SAP-specific error code |
+| `AdditionalDetails` | object | Additional error context |
+
+### Error Logging and Persistence
+
+All simulated errors are logged with detailed information and persisted to `data/errors/logs/error-simulation-{date}.json` for analysis and debugging.
+
+### Testing Error Scenarios
+
+```bash
+# Test timeout handling
+curl -H "X-SAP-Mock-Error: Timeout" http://localhost:5204/api/ERP01/MM/materials/MAT001
+
+# Test authorization failure
+curl -H "X-SAP-Mock-Error: Authorization" http://localhost:5204/api/ERP01/SD/orders/ORD001
+
+# Test business logic error
+curl -H "X-SAP-Mock-Error: Business" http://localhost:5204/api/ERP01/MM/materials/INVALID_ID
+
+# Test system error
+curl -H "X-SAP-Mock-Error: System" http://localhost:5204/api/ERP01/MM/materials/MAT001
+```
 
 ## 🏗️ Architecture
 
@@ -39,7 +145,7 @@ The SAP Mock Service provides a flexible, configurable solution for simulating S
 - **CI/CD Pipelines** - Automated testing without SAP dependencies
 - **Demo Environments** - Showcase functionality without production data
 - **Performance Testing** - Load test without impacting SAP systems
-- **Failure Testing** - Simulate SAP errors and timeouts
+- **Error Scenario Testing** - Simulate SAP errors, timeouts, and failures with configurable probabilities
 
 ## 🏃 Quick Start
 
@@ -52,6 +158,9 @@ dotnet run --project ./AppHost
 
 # Access the mock service
 curl http://localhost:5000/api/ERP-DEV/MM/materials/MATERIAL-001
+
+# Test error simulation
+curl -H "X-SAP-Mock-Error: Timeout" http://localhost:5000/api/ERP-DEV/MM/materials/MATERIAL-001
 ```
 
 ## 📦 What's Included
@@ -59,6 +168,7 @@ curl http://localhost:5000/api/ERP-DEV/MM/materials/MATERIAL-001
 - Core mocking framework with plugin architecture
 - Pre-built handlers for Materials Management (MM), Sales & Distribution (SD), and Finance (FI)
 - Sample mock data for common SAP entities
+- **Error simulation system** with configurable error types, probabilities, and SAP-style responses
 - Configuration templates for different SAP systems
 - Aspire orchestration setup
 - Comprehensive documentation and examples
@@ -473,6 +583,104 @@ builder.Build().Run();
 }
 ```
 
+### Error Simulation Data Examples
+
+#### Materials Management Error Configuration
+```json
+// data/errors/ERP01/MM/_materials_{id}.json
+[
+  {
+    "ErrorType": 0,
+    "Probability": 0.1,
+    "DelayMs": 5000,
+    "CustomMessage": "Material service timeout",
+    "SAPErrorCode": "MM_TIMEOUT",
+    "AdditionalDetails": {
+      "service": "MaterialService",
+      "operation": "GetMaterial"
+    }
+  },
+  {
+    "ErrorType": 2,
+    "Probability": 0.05,
+    "DelayMs": 0,
+    "CustomMessage": "Material not found in system",
+    "SAPErrorCode": "MM_NOT_FOUND",
+    "AdditionalDetails": {
+      "reason": "Material ID does not exist",
+      "suggested_action": "Check material ID and try again"
+    }
+  }
+]
+```
+
+#### Sales & Distribution Error Configuration
+```json
+// data/errors/ERP01/SD/_orders_{id}.json
+[
+  {
+    "ErrorType": 1,
+    "Probability": 0.02,
+    "DelayMs": 1000,
+    "CustomMessage": "Insufficient authorization for sales data",
+    "SAPErrorCode": "SD_AUTH_FAILED",
+    "AdditionalDetails": {
+      "required_role": "SAP_SD_DISPLAY",
+      "user_roles": ["SAP_USER", "SAP_MM_DISPLAY"]
+    }
+  },
+  {
+    "ErrorType": 3,
+    "Probability": 0.03,
+    "DelayMs": 2000,
+    "CustomMessage": "Sales system temporarily unavailable",
+    "SAPErrorCode": "SD_SYSTEM_DOWN",
+    "AdditionalDetails": {
+      "system_status": "maintenance",
+      "estimated_recovery": "2024-01-01T14:30:00Z"
+    }
+  }
+]
+```
+
+#### Error Response Example
+```json
+// Typical error response returned by the mock service
+{
+  "Code": "MM_TIMEOUT",
+  "Message": "Material service timeout",
+  "Severity": "Error",
+  "Category": "Technical",
+  "Target": null,
+  "Details": {
+    "service": "MaterialService",
+    "operation": "GetMaterial",
+    "timeout_ms": 5000
+  },
+  "Timestamp": "2024-01-01T12:00:00.000Z"
+}
+```
+
+#### Error Simulation Log Example
+```json
+// data/errors/logs/error-simulation-2024-01-01.json
+{
+  "timestamp": "2024-01-01T12:00:00.000Z",
+  "system": "ERP01",
+  "module": "MM",
+  "endpoint": "/materials/MATERIAL-001",
+  "errorType": "Timeout",
+  "httpStatus": 408,
+  "errorCode": "MM_TIMEOUT",
+  "message": "Material service timeout",
+  "delayMs": 5000,
+  "triggeredBy": "probability",
+  "probability": 0.1,
+  "requestId": "req-123456",
+  "userAgent": "curl/7.68.0"
+}
+```
+
 ## Usage in Development
 
 ### 1. Local Development with Aspire
@@ -530,6 +738,68 @@ public class OrderService
 }
 ```
 
+### 4. Testing with Error Simulation
+```csharp
+// Test error handling in your service
+public class OrderServiceTests
+{
+    [Test]
+    public async Task GetMaterialAsync_ShouldHandleTimeout()
+    {
+        // Arrange
+        var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Add("X-SAP-Mock-Error", "Timeout");
+        var service = new OrderService(httpClient, configuration);
+        
+        // Act & Assert
+        await Assert.ThrowsAsync<HttpRequestException>(() => 
+            service.GetMaterialAsync("MATERIAL-001"));
+    }
+    
+    [Test]
+    public async Task GetMaterialAsync_ShouldHandleAuthFailure()
+    {
+        // Arrange
+        var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Add("X-SAP-Mock-Error", "Authorization");
+        var service = new OrderService(httpClient, configuration);
+        
+        // Act & Assert
+        await Assert.ThrowsAsync<HttpRequestException>(() => 
+            service.GetMaterialAsync("MATERIAL-001"));
+    }
+}
+```
+
+### 5. Error Simulation in CI/CD
+```bash
+#!/bin/bash
+# Integration test script with error simulation
+
+# Test normal operation
+response=$(curl -s -w "%{http_code}" http://localhost:5000/api/ERP-DEV/MM/materials/MAT001)
+if [[ "$response" != *"200"* ]]; then
+    echo "Normal operation test failed"
+    exit 1
+fi
+
+# Test timeout handling
+response=$(curl -s -w "%{http_code}" -H "X-SAP-Mock-Error: Timeout" http://localhost:5000/api/ERP-DEV/MM/materials/MAT001)
+if [[ "$response" != *"408"* ]]; then
+    echo "Timeout test failed"
+    exit 1
+fi
+
+# Test authorization error handling
+response=$(curl -s -w "%{http_code}" -H "X-SAP-Mock-Error: Authorization" http://localhost:5000/api/ERP-DEV/MM/materials/MAT001)
+if [[ "$response" != *"401"* ]]; then
+    echo "Authorization test failed"
+    exit 1
+fi
+
+echo "All error simulation tests passed!"
+```
+
 ## Extension Points
 
 ### 1. Custom Mock Data Providers
@@ -582,4 +852,9 @@ public class SAPMockLoggingMiddleware
 4. **Health Checks**: Implement health checks for each SAP system mock
 5. **Documentation**: Document available endpoints and mock data structure
 6. **Validation**: Add request validation to match SAP's behavior
-7. **Error Simulation**: Include ability to simulate SAP errors and timeouts
+7. **Error Simulation**: 
+   - Use realistic error probabilities (0.01-0.1) for testing
+   - Configure different error types per endpoint based on real SAP behavior
+   - Include error simulation in automated testing pipelines
+   - Monitor error simulation logs for analysis
+   - Test error recovery mechanisms regularly

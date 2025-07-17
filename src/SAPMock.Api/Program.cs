@@ -1,6 +1,7 @@
 using SAPMock.ServiceDefaults;
 using SAPMock.Configuration;
 using SAPMock.Configuration.Handlers;
+using SAPMock.Configuration.Services;
 using SAPMock.Core;
 using SAPMock.Data;
 using SAPMock.Api.Models;
@@ -29,6 +30,14 @@ builder.Services.AddSingleton<IMockDataProvider>(provider =>
 {
     var config = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<SAPMockConfiguration>>();
     return new FileBasedMockDataProvider(config.Value.DataPath, config.Value.EnableExtensions);
+});
+
+// Register Error Simulation Service
+builder.Services.AddSingleton<IErrorSimulationService>(provider =>
+{
+    var config = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<SAPMockConfiguration>>();
+    var logger = provider.GetRequiredService<ILogger<ErrorSimulationService>>();
+    return new ErrorSimulationService(logger, config.Value);
 });
 
 // Register Handler Factory

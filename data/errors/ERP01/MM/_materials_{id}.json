@@ -1,0 +1,24 @@
+[
+  {
+    "ErrorType": 0,
+    "Probability": 0.1,
+    "DelayMs": 5000,
+    "CustomMessage": "Material service timeout",
+    "SAPErrorCode": "MM_TIMEOUT",
+    "AdditionalDetails": {
+      "service": "MaterialService",
+      "operation": "GetMaterial"
+    }
+  },
+  {
+    "ErrorType": 2,
+    "Probability": 0.05,
+    "DelayMs": 0,
+    "CustomMessage": "Material not found in system",
+    "SAPErrorCode": "MM_NOT_FOUND",
+    "AdditionalDetails": {
+      "reason": "Material ID does not exist",
+      "suggested_action": "Check material ID and try again"
+    }
+  }
+]

@@ -1,0 +1,24 @@
+[
+  {
+    "ErrorType": 1,
+    "Probability": 0.02,
+    "DelayMs": 1000,
+    "CustomMessage": "Insufficient authorization for sales data",
+    "SAPErrorCode": "SD_AUTH_FAILED",
+    "AdditionalDetails": {
+      "required_role": "SAP_SD_DISPLAY",
+      "user_roles": ["SAP_USER", "SAP_MM_DISPLAY"]
+    }
+  },
+  {
+    "ErrorType": 3,
+    "Probability": 0.03,
+    "DelayMs": 2000,
+    "CustomMessage": "Sales system temporarily unavailable",
+    "SAPErrorCode": "SD_SYSTEM_DOWN",
+    "AdditionalDetails": {
+      "system_status": "maintenance",
+      "estimated_recovery": "2024-01-01T14:30:00Z"
+    }
+  }
+]

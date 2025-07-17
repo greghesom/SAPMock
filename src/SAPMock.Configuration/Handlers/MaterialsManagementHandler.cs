@@ -52,7 +52,26 @@ public class MaterialsManagementHandler : ISAPModuleHandler
                 Method = "GET",
                 RequestType = typeof(object),
                 ResponseType = typeof(MaterialResponse),
-                Handler = GetMaterialHandler
+                Handler = GetMaterialHandler,
+                ErrorSimulations = new List<ErrorSimulationConfig>
+                {
+                    new ErrorSimulationConfig
+                    {
+                        ErrorType = ErrorType.Timeout,
+                        Probability = 0.02, // 2% chance of timeout
+                        DelayMs = 5000,
+                        CustomMessage = "Material service timeout",
+                        SAPErrorCode = "MM_TIMEOUT"
+                    },
+                    new ErrorSimulationConfig
+                    {
+                        ErrorType = ErrorType.Business,
+                        Probability = 0.01, // 1% chance of business error
+                        DelayMs = 0,
+                        CustomMessage = "Material not found",
+                        SAPErrorCode = "MM_NOT_FOUND"
+                    }
+                }
             },
             // GET /materials
             new SAPEndpoint
