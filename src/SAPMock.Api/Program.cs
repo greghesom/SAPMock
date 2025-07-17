@@ -91,11 +91,13 @@ app.UseHttpsRedirection();
 // Add static files for Blazor
 app.UseStaticFiles();
 
-// Add request logging middleware
-app.UseMiddleware<RequestLoggingMiddleware>();
-
 // Configure routing
 app.UseRouting();
+
+// Configure Blazor
+app.MapRazorPages();
+app.MapBlazorHub();
+app.MapHub<RequestHub>("/requestHub");
 
 // Register dynamic SAP endpoints
 await app.RegisterSAPEndpoints();
@@ -185,10 +187,9 @@ app.MapPost("/api/systems", async (SystemResponse systemRequest, ISAPSystemRegis
 .WithName("RegisterSystem")
 .WithOpenApi();
 
-// Configure Blazor
-app.MapRazorPages();
-app.MapBlazorHub();
-app.MapHub<RequestHub>("/requestHub");
+// Add request logging middleware after routing is set up
+app.UseMiddleware<RequestLoggingMiddleware>();
+
 app.MapFallbackToPage("/_Host");
 
 app.Run();
