@@ -1,0 +1,17 @@
+[
+  {
+    "customerNumber": "TEST001",
+    "name": "Test Corporation",
+    "name2": "Development",
+    "searchTerm": "TEST CORP",
+    "city": "Test City",
+    "postalCode": "99999",
+    "country": "TS",
+    "region": "TC",
+    "salesOrganization": "1000",
+    "distributionChannel": "10",
+    "division": "00",
+    "customerGroup": "TEST",
+    "paymentTerms": "0001"
+  }
+]

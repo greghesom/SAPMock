@@ -1,0 +1,594 @@
+@page "/data"
+@using SAPMock.Core
+@using SAPMock.Configuration
+@using Microsoft.Extensions.Options
+@using System.Text.Json
+@inject IMockDataProvider DataProvider
+@inject ILogger<DataExplorer> Logger
+@inject IOptions<SAPMockConfiguration> Configuration
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Data Explorer - SAP Mock Service</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudPaper Class="pa-4">
+                <MudText Typo="Typo.h4" GutterBottom="true">
+                    <MudIcon Icon="Icons.Material.Filled.Folder" Class="mr-2" />
+                    Data Explorer
+                </MudText>
+                <MudText Typo="Typo.body1" Class="mb-4">
+                    Browse and manage mock data files
+                </MudText>
+            </MudPaper>
+        </MudItem>
+
+        <!-- File Tree -->
+        <MudItem xs="12" md="4">
+            <MudPaper Class="pa-4" Style="height: 600px; overflow-y: auto;">
+                <MudStack>
+                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.h6">File Structure</MudText>
+                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                            <MudButton Color="@(currentLayer == "data" ? Color.Primary : Color.Default)"
+                                      OnClick="@(async () => await SwitchLayer("data"))">
+                                Data
+                            </MudButton>
+                            <MudButton Color="@(currentLayer == "extensions" ? Color.Primary : Color.Default)"
+                                      OnClick="@(async () => await SwitchLayer("extensions"))">
+                                Extensions
+                            </MudButton>
+                        </MudButtonGroup>
+                    </MudStack>
+                    
+                    <MudButton Variant="Variant.Outlined" Color="Color.Success" Size="Size.Small" 
+                              StartIcon="Icons.Material.Filled.Add" OnClick="@(() => ShowCreateFileDialog())">
+                        New File
+                    </MudButton>
+
+                    <MudTreeView Items="fileTreeItems" SelectedValue="selectedFile" SelectedValueChanged="@((FileTreeItem? item) => OnSelectedFileChanged(item))">
+                        <ItemTemplate>
+                            <MudTreeViewItem Expanded="@context.IsExpanded" Value="@context">
+                                <Content>
+                                    <MudStack Row AlignItems="AlignItems.Center" Spacing="1">
+                                        @if (context != null)
+                                        {
+                                            @if (context.IsDirectory)
+                                            {
+                                                <MudIcon Icon="@(context.IsExpanded ? Icons.Material.Filled.FolderOpen : Icons.Material.Filled.Folder)" 
+                                                        Size="Size.Small" />
+                                            }
+                                            else
+                                            {
+                                                <MudIcon Icon="Icons.Material.Filled.InsertDriveFile" Size="Size.Small" />
+                                            }
+                                            <MudText Typo="Typo.body2">@context.Name</MudText>
+                                            @if (context.IsFromExtensions)
+                                            {
+                                                <MudChip Size="Size.Small" Color="Color.Info" Text="Ext" />
+                                            }
+                                        }
+                                    </MudStack>
+                                </Content>
+                            </MudTreeViewItem>
+                        </ItemTemplate>
+                    </MudTreeView>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <!-- File Content -->
+        <MudItem xs="12" md="8">
+            <MudPaper Class="pa-4" Style="height: 600px;">
+                <MudStack>
+                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.h6">
+                            @(selectedFile?.Name ?? "Select a file")
+                            @if (selectedFile != null && !selectedFile.IsDirectory)
+                            {
+                                <MudChip Size="Size.Small" Color="@(isModified ? Color.Warning : Color.Default)" 
+                                        Text="@(isModified ? "Modified" : "Saved")" />
+                            }
+                        </MudText>
+                        @if (selectedFile != null && !selectedFile.IsDirectory)
+                        {
+                            <MudButtonGroup Variant="Variant.Filled">
+                                <MudButton Color="Color.Primary" OnClick="LoadFileContent">
+                                    <MudIcon Icon="Icons.Material.Filled.Refresh" Class="mr-2" />
+                                    Reload
+                                </MudButton>
+                                <MudButton Color="Color.Success" OnClick="SaveFileContent" Disabled="@(!isModified || isSaving)">
+                                    @if (isSaving)
+                                    {
+                                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    }
+                                    else
+                                    {
+                                        <MudIcon Icon="Icons.Material.Filled.Save" Class="mr-2" />
+                                    }
+                                    Save
+                                </MudButton>
+                                <MudButton Color="Color.Error" Variant="Variant.Outlined" OnClick="DeleteFile">
+                                    <MudIcon Icon="Icons.Material.Filled.Delete" Class="mr-2" />
+                                    Delete
+                                </MudButton>
+                            </MudButtonGroup>
+                        }
+                    </MudStack>
+
+                    @if (selectedFile == null)
+                    {
+                        <MudAlert Severity="Severity.Info">
+                            Select a JSON file from the tree to view its content
+                        </MudAlert>
+                    }
+                    else if (selectedFile.IsDirectory)
+                    {
+                        <MudAlert Severity="Severity.Info">
+                            This is a directory. Select a file to view its content.
+                        </MudAlert>
+                    }
+                    else if (isLoading)
+                    {
+                        <MudProgressCircular Indeterminate="true" />
+                    }
+                    else if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <MudAlert Severity="Severity.Error">@errorMessage</MudAlert>
+                    }
+                    else
+                    {
+                        <MudTextField T="string" 
+                                      @bind-Value="fileContent"
+                                      @bind-Value:after="OnFileContentChanged"
+                                      Lines="22" 
+                                      Variant="Variant.Outlined"
+                                      Style="font-family: 'Courier New', monospace; font-size: 12px;" 
+                                      Placeholder="Enter JSON content here..." />
+                    }
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+<!-- Create File Dialog -->
+<MudDialog @bind-IsVisible="showCreateFileDialog" Options="dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="Icons.Material.Filled.Add" Class="mr-2" />
+            Create New File
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack>
+            <MudTextField T="string" 
+                          @bind-Value="newFileName" 
+                          Label="File Name" 
+                          Placeholder="e.g., customer-data.json"
+                          Adornment="Adornment.End"
+                          AdornmentText=".json"
+                          Variant="Variant.Outlined" />
+            
+            <MudTextField T="string" 
+                          @bind-Value="newFilePath" 
+                          Label="Path (relative to current layer)" 
+                          Placeholder="e.g., system/module or leave empty for root"
+                          Variant="Variant.Outlined"
+                          HelperText="Leave empty to create in the root of the current layer" />
+
+            <MudTextField T="string" 
+                          @bind-Value="newFileContent" 
+                          Lines="10" 
+                          Label="Initial Content"
+                          Placeholder="Enter JSON content..."
+                          Variant="Variant.Outlined"
+                          Style="font-family: 'Courier New', monospace;" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => showCreateFileDialog = false)">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="@(async () => await CreateNewFile())">Create</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private HashSet<FileTreeItem?> fileTreeItems = new();
+    private FileTreeItem? selectedFile;
+    private string fileContent = string.Empty;
+    private string originalFileContent = string.Empty;
+    private bool isLoading = false;
+    private bool isSaving = false;
+    private bool isModified = false;
+    private string errorMessage = string.Empty;
+    private string currentLayer = "data";
+
+    // Create file dialog
+    private bool showCreateFileDialog = false;
+    private string newFileName = string.Empty;
+    private string newFilePath = string.Empty;
+    private string newFileContent = "{}";
+    private readonly DialogOptions dialogOptions = new() { CloseOnEscapeKey = true };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFileTree();
+        EnsureExtensionsDirectoryExists();
+    }
+
+    private void EnsureExtensionsDirectoryExists()
+    {
+        try
+        {
+            var extensionsPath = GetExtensionsPath();
+            if (!Directory.Exists(extensionsPath))
+            {
+                Directory.CreateDirectory(extensionsPath);
+                Logger.LogInformation("Created extensions directory at {Path}", extensionsPath);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to create extensions directory");
+        }
+    }
+
+    private async Task SwitchLayer(string layer)
+    {
+        if (currentLayer == layer) return;
+        
+        currentLayer = layer;
+        selectedFile = null;
+        fileContent = string.Empty;
+        originalFileContent = string.Empty;
+        isModified = false;
+        errorMessage = string.Empty;
+        
+        await LoadFileTree();
+    }
+
+    private async Task LoadFileTree()
+    {
+        try
+        {
+            var basePath = currentLayer == "data" ? GetDataPath() : GetExtensionsPath();
+            if (Directory.Exists(basePath))
+            {
+                var fileTreeList = await BuildFileTree(basePath, "");
+                fileTreeItems = new HashSet<FileTreeItem?>(fileTreeList);
+            }
+            else
+            {
+                fileTreeItems = new HashSet<FileTreeItem?>();
+                if (currentLayer == "extensions")
+                {
+                    errorMessage = "Extensions directory does not exist yet. Create your first file to initialize it.";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load file tree for layer {Layer}", currentLayer);
+            errorMessage = $"Failed to load file tree: {ex.Message}";
+        }
+    }
+
+    private async Task<List<FileTreeItem>> BuildFileTree(string basePath, string relativePath)
+    {
+        var items = new List<FileTreeItem>();
+        var fullPath = Path.Combine(basePath, relativePath);
+
+        if (!Directory.Exists(fullPath))
+            return items;
+
+        // Add directories
+        foreach (var directory in Directory.GetDirectories(fullPath))
+        {
+            var dirName = Path.GetFileName(directory);
+            var item = new FileTreeItem
+            {
+                Name = dirName,
+                Path = Path.Combine(relativePath, dirName),
+                IsDirectory = true,
+                IsExpanded = false,
+                IsFromExtensions = currentLayer == "extensions"
+            };
+            
+            item.Items = await BuildFileTree(basePath, item.Path);
+            items.Add(item);
+        }
+
+        // Add JSON files
+        foreach (var file in Directory.GetFiles(fullPath, "*.json"))
+        {
+            var fileName = Path.GetFileName(file);
+            items.Add(new FileTreeItem
+            {
+                Name = fileName,
+                Path = Path.Combine(relativePath, fileName),
+                IsDirectory = false,
+                IsFromExtensions = currentLayer == "extensions"
+            });
+        }
+
+        return items.OrderBy(i => i.IsDirectory ? 0 : 1).ThenBy(i => i.Name).ToList();
+    }
+
+    private async Task LoadFileContent()
+    {
+        if (selectedFile == null || selectedFile.IsDirectory)
+            return;
+
+        isLoading = true;
+        errorMessage = string.Empty;
+        fileContent = string.Empty;
+        originalFileContent = string.Empty;
+        isModified = false;
+
+        try
+        {
+            var basePath = currentLayer == "data" ? GetDataPath() : GetExtensionsPath();
+            var fullPath = Path.Combine(basePath, selectedFile.Path);
+            
+            if (File.Exists(fullPath))
+            {
+                var content = await File.ReadAllTextAsync(fullPath);
+                // Pretty print JSON
+                try
+                {
+                    var jsonDocument = System.Text.Json.JsonDocument.Parse(content);
+                    fileContent = System.Text.Json.JsonSerializer.Serialize(jsonDocument, new System.Text.Json.JsonSerializerOptions 
+                    { 
+                        WriteIndented = true 
+                    });
+                }
+                catch
+                {
+                    fileContent = content; // Use original content if JSON parsing fails
+                }
+                originalFileContent = fileContent;
+                isModified = false;
+            }
+            else
+            {
+                errorMessage = "File not found";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load file content for {FilePath}", selectedFile.Path);
+            errorMessage = $"Failed to load file: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SaveFileContent()
+    {
+        if (selectedFile == null || selectedFile.IsDirectory || !isModified)
+            return;
+
+        isSaving = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            // Validate JSON before saving
+            try
+            {
+                System.Text.Json.JsonDocument.Parse(fileContent);
+            }
+            catch (JsonException ex)
+            {
+                errorMessage = $"Invalid JSON: {ex.Message}";
+                return;
+            }
+
+            var basePath = currentLayer == "data" ? GetDataPath() : GetExtensionsPath();
+            var fullPath = Path.Combine(basePath, selectedFile.Path);
+            
+            // Ensure directory exists
+            var directory = Path.GetDirectoryName(fullPath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            await File.WriteAllTextAsync(fullPath, fileContent);
+            originalFileContent = fileContent;
+            isModified = false;
+            Logger.LogInformation("Saved file {FilePath} to {Layer} layer", selectedFile.Path, currentLayer);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to save file content for {FilePath}", selectedFile.Path);
+            errorMessage = $"Failed to save file: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task DeleteFile()
+    {
+        if (selectedFile == null || selectedFile.IsDirectory)
+            return;
+
+        try
+        {
+            var basePath = currentLayer == "data" ? GetDataPath() : GetExtensionsPath();
+            var fullPath = Path.Combine(basePath, selectedFile.Path);
+            
+            if (File.Exists(fullPath))
+            {
+                File.Delete(fullPath);
+                Logger.LogInformation("Deleted file {FilePath} from {Layer} layer", selectedFile.Path, currentLayer);
+                
+                // Refresh tree and clear selection
+                selectedFile = null;
+                fileContent = string.Empty;
+                originalFileContent = string.Empty;
+                isModified = false;
+                await LoadFileTree();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to delete file {FilePath}", selectedFile.Path);
+            errorMessage = $"Failed to delete file: {ex.Message}";
+        }
+    }
+
+    private void ShowCreateFileDialog()
+    {
+        newFileName = string.Empty;
+        newFilePath = string.Empty;
+        newFileContent = "{}";
+        showCreateFileDialog = true;
+    }
+
+    private async Task CreateNewFile()
+    {
+        if (string.IsNullOrWhiteSpace(newFileName))
+        {
+            errorMessage = "File name is required";
+            return;
+        }
+
+        try
+        {
+            // Validate JSON content
+            try
+            {
+                System.Text.Json.JsonDocument.Parse(newFileContent);
+            }
+            catch (JsonException ex)
+            {
+                errorMessage = $"Invalid JSON content: {ex.Message}";
+                return;
+            }
+
+            var fileName = newFileName.EndsWith(".json") ? newFileName : $"{newFileName}.json";
+            var relativePath = string.IsNullOrWhiteSpace(newFilePath) 
+                ? fileName 
+                : Path.Combine(newFilePath, fileName);
+
+            var basePath = currentLayer == "data" ? GetDataPath() : GetExtensionsPath();
+            var fullPath = Path.Combine(basePath, relativePath);
+
+            // Check if file already exists
+            if (File.Exists(fullPath))
+            {
+                errorMessage = "File already exists";
+                return;
+            }
+
+            // Ensure directory exists
+            var directory = Path.GetDirectoryName(fullPath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            await File.WriteAllTextAsync(fullPath, newFileContent);
+            Logger.LogInformation("Created new file {FilePath} in {Layer} layer", relativePath, currentLayer);
+
+            showCreateFileDialog = false;
+            await LoadFileTree();
+            
+            // Select the newly created file
+            var createdFile = FindFileInTree(relativePath);
+            if (createdFile != null)
+            {
+                await OnSelectedFileChanged(createdFile);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to create new file {FileName}", newFileName);
+            errorMessage = $"Failed to create file: {ex.Message}";
+        }
+    }
+
+    private FileTreeItem? FindFileInTree(string path)
+    {
+        foreach (var item in fileTreeItems)
+        {
+            var found = FindFileInTreeRecursive(item, path);
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    private FileTreeItem? FindFileInTreeRecursive(FileTreeItem item, string path)
+    {
+        if (item?.Path == path) return item;
+        
+        if (item?.Items != null)
+        {
+            foreach (var child in item.Items)
+            {
+                var found = FindFileInTreeRecursive(child, path);
+                if (found != null) return found;
+            }
+        }
+        
+        return null;
+    }
+
+    private string GetDataPath()
+    {
+        var config = Configuration.Value;
+        var dataPath = config.DataPath ?? "../../data";
+        
+        // Handle relative paths
+        if (!Path.IsPathRooted(dataPath))
+        {
+            dataPath = Path.Combine(Directory.GetCurrentDirectory(), dataPath);
+        }
+        
+        return Path.GetFullPath(dataPath);
+    }
+
+    private string GetExtensionsPath()
+    {
+        var dataPath = GetDataPath();
+        var parentDir = Directory.GetParent(dataPath)?.FullName ?? Directory.GetCurrentDirectory();
+        return Path.Combine(parentDir, "extensions");
+    }
+
+    private async Task OnSelectedFileChanged(FileTreeItem? item)
+    {
+        selectedFile = item;
+        if (item != null && !item.IsDirectory)
+        {
+            await LoadFileContent();
+        }
+        else
+        {
+            fileContent = string.Empty;
+            originalFileContent = string.Empty;
+            isModified = false;
+            errorMessage = string.Empty;
+        }
+    }
+
+    private void OnFileContentChanged()
+    {
+        isModified = fileContent != originalFileContent;
+    }
+
+    public class FileTreeItem
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Path { get; set; } = string.Empty;
+        public bool IsDirectory { get; set; }
+        public bool IsExpanded { get; set; }
+        public bool IsFromExtensions { get; set; }
+        public List<FileTreeItem> Items { get; set; } = new();
+    }
+}

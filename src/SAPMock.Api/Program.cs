@@ -7,11 +7,21 @@ using SAPMock.Data;
 using SAPMock.Api.Models;
 using SAPMock.Api.Services;
 using SAPMock.Api.Extensions;
+using SAPMock.Api.Middleware;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add Aspire service defaults
 builder.AddServiceDefaults();
+
+// Add Blazor Server
+builder.Services.AddRazorPages();
+builder.Services.AddServerSideBlazor();
+builder.Services.AddMudServices();
+
+// Add SignalR for real-time updates
+builder.Services.AddSignalR();
 
 // Add SAP Mock configuration
 builder.Services.Configure<SAPMockConfiguration>(
@@ -59,6 +69,9 @@ builder.Services.AddTransient<SalesDistributionHandler>(provider =>
 // Register endpoint registration service as hosted service
 builder.Services.AddHostedService<EndpointRegistrationService>();
 
+// Add GUI services
+builder.Services.AddSingleton<IRequestMonitorService, RequestMonitorService>();
+
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -74,6 +87,17 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Add static files for Blazor
+app.UseStaticFiles();
+
+// Configure routing
+app.UseRouting();
+
+// Configure Blazor
+app.MapRazorPages();
+app.MapBlazorHub();
+app.MapHub<RequestHub>("/requestHub");
 
 // Register dynamic SAP endpoints
 await app.RegisterSAPEndpoints();
@@ -162,5 +186,10 @@ app.MapPost("/api/systems", async (SystemResponse systemRequest, ISAPSystemRegis
 })
 .WithName("RegisterSystem")
 .WithOpenApi();
+
+// Add request logging middleware after routing is set up
+app.UseMiddleware<RequestLoggingMiddleware>();
+
+app.MapFallbackToPage("/_Host");
 
 app.Run();

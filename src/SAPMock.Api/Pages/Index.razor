@@ -1,0 +1,211 @@
+@page "/"
+@inject IRequestMonitorService RequestMonitor
+@inject NavigationManager NavigationManager
+@implements IAsyncDisposable
+
+<PageTitle>SAP Mock Service Dashboard</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudPaper Class="pa-4">
+                <MudText Typo="Typo.h4" GutterBottom="true">
+                    <MudIcon Icon="Icons.Material.Filled.Dashboard" Class="mr-2" />
+                    Live Request Dashboard
+                </MudText>
+                <MudText Typo="Typo.body1" Class="mb-4">
+                    Real-time monitoring of SAP Mock Service requests
+                </MudText>
+                
+                <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+                    <MudStack Row>
+                        <MudChip Text="@($"Total Requests: {totalRequests}")" Color="Color.Primary" />
+                        <MudChip Text="@($"Status: {connectionStatus}")" Color="@(isConnected ? Color.Success : Color.Error)" />
+                    </MudStack>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="ClearRequests">
+                        <MudIcon Icon="Icons.Material.Filled.Clear" Class="mr-2" />
+                        Clear All
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Request List -->
+        <MudItem xs="12" md="8">
+            <MudPaper Class="pa-4" Style="height: 600px; overflow-y: auto;">
+                <MudText Typo="Typo.h6" Class="mb-3">Recent Requests</MudText>
+                
+                @if (!requests.Any())
+                {
+                    <MudAlert Severity="Severity.Info">
+                        No requests captured yet. Make some API calls to see them here.
+                    </MudAlert>
+                }
+                else
+                {
+                    <MudStack Spacing="2">
+                        @foreach (var request in requests.Take(50))
+                        {
+                            <MudCard Class="cursor-pointer" @onclick="() => SelectRequest(request)">
+                                <MudCardContent Class="pa-3">
+                                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                        <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                            <MudChip Size="Size.Small" Color="GetMethodColor(request.Method)" Text="@request.Method" />
+                                            <MudText Typo="Typo.body2">@request.Path</MudText>
+                                            @if (!string.IsNullOrEmpty(request.System))
+                                            {
+                                                <MudChip Size="Size.Small" Color="Color.Default" Text="@request.System" />
+                                            }
+                                            @if (!string.IsNullOrEmpty(request.Module))
+                                            {
+                                                <MudChip Size="Size.Small" Color="Color.Default" Text="@request.Module" />
+                                            }
+                                        </MudStack>
+                                        <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                            <MudChip Size="Size.Small" Color="GetStatusColor(request.StatusCode)" Text="@request.StatusCode.ToString()" />
+                                            <MudText Typo="Typo.caption">@request.ResponseTimeMs ms</MudText>
+                                            <MudText Typo="Typo.caption">@request.Timestamp.ToString("HH:mm:ss")</MudText>
+                                        </MudStack>
+                                    </MudStack>
+                                </MudCardContent>
+                            </MudCard>
+                        }
+                    </MudStack>
+                }
+            </MudPaper>
+        </MudItem>
+
+        <!-- Request Details -->
+        <MudItem xs="12" md="4">
+            <MudPaper Class="pa-4" Style="height: 600px; overflow-y: auto;">
+                <MudText Typo="Typo.h6" Class="mb-3">Request Details</MudText>
+                
+                @if (selectedRequest == null)
+                {
+                    <MudAlert Severity="Severity.Info">
+                        Select a request to view details
+                    </MudAlert>
+                }
+                else
+                {
+                    <MudStack Spacing="3">
+                        <MudTextField Label="Timestamp" Value="@selectedRequest.Timestamp.ToString("yyyy-MM-dd HH:mm:ss UTC")" ReadOnly="true" />
+                        <MudTextField Label="Method" Value="@selectedRequest.Method" ReadOnly="true" />
+                        <MudTextField Label="Path" Value="@selectedRequest.Path" ReadOnly="true" />
+                        <MudTextField Label="Status Code" Value="@selectedRequest.StatusCode.ToString()" ReadOnly="true" />
+                        <MudTextField Label="Response Time" Value="@(selectedRequest.ResponseTimeMs + " ms")" ReadOnly="true" />
+                        
+                        @if (!string.IsNullOrEmpty(selectedRequest.UserAgent))
+                        {
+                            <MudTextField Label="User Agent" Value="@selectedRequest.UserAgent" ReadOnly="true" Lines="2" />
+                        }
+                        
+                        @if (!string.IsNullOrEmpty(selectedRequest.RemoteIpAddress))
+                        {
+                            <MudTextField Label="Remote IP" Value="@selectedRequest.RemoteIpAddress" ReadOnly="true" />
+                        }
+                        
+                        @if (!string.IsNullOrEmpty(selectedRequest.RequestBody))
+                        {
+                            <MudTextField Label="Request Body" Value="@selectedRequest.RequestBody" ReadOnly="true" Lines="4" />
+                        }
+                        
+                        @if (!string.IsNullOrEmpty(selectedRequest.ResponseBody))
+                        {
+                            <MudTextField Label="Response Body" Value="@selectedRequest.ResponseBody" ReadOnly="true" Lines="4" />
+                        }
+                    </MudStack>
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private List<RequestLogEntry> requests = new();
+    private RequestLogEntry? selectedRequest;
+    private HubConnection? hubConnection;
+    private bool isConnected = false;
+    private string connectionStatus = "Disconnected";
+    private int totalRequests = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load existing requests
+        requests = RequestMonitor.GetRecentRequests(100).ToList();
+        totalRequests = RequestMonitor.GetTotalRequestCount();
+
+        // Setup SignalR connection
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/requestHub"))
+            .Build();
+
+        hubConnection.On<RequestLogEntry>("ReceiveRequest", (entry) =>
+        {
+            requests.Insert(0, entry);
+            if (requests.Count > 100) requests.RemoveAt(requests.Count - 1);
+            totalRequests++;
+            InvokeAsync(StateHasChanged);
+        });
+
+        hubConnection.Closed += _ =>
+        {
+            isConnected = false;
+            connectionStatus = "Disconnected";
+            InvokeAsync(StateHasChanged);
+            return Task.CompletedTask;
+        };
+
+        hubConnection.Reconnected += _ =>
+        {
+            isConnected = true;
+            connectionStatus = "Connected";
+            InvokeAsync(StateHasChanged);
+            return Task.CompletedTask;
+        };
+
+        await hubConnection.StartAsync();
+        isConnected = true;
+        connectionStatus = "Connected";
+    }
+
+    private void SelectRequest(RequestLogEntry request)
+    {
+        selectedRequest = request;
+    }
+
+    private Color GetMethodColor(string method) => method.ToUpper() switch
+    {
+        "GET" => Color.Success,
+        "POST" => Color.Primary,
+        "PUT" => Color.Warning,
+        "DELETE" => Color.Error,
+        _ => Color.Default
+    };
+
+    private Color GetStatusColor(int statusCode) => statusCode switch
+    {
+        >= 200 and < 300 => Color.Success,
+        >= 300 and < 400 => Color.Info,
+        >= 400 and < 500 => Color.Warning,
+        >= 500 => Color.Error,
+        _ => Color.Default
+    };
+
+    private async Task ClearRequests()
+    {
+        RequestMonitor.ClearRequests();
+        requests.Clear();
+        selectedRequest = null;
+        totalRequests = 0;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+}
