@@ -1,0 +1,244 @@
+@page "/data"
+@using SAPMock.Core
+@inject IMockDataProvider DataProvider
+@inject ILogger<DataExplorer> Logger
+
+<PageTitle>Data Explorer - SAP Mock Service</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudPaper Class="pa-4">
+                <MudText Typo="Typo.h4" GutterBottom="true">
+                    <MudIcon Icon="Icons.Material.Filled.Folder" Class="mr-2" />
+                    Data Explorer
+                </MudText>
+                <MudText Typo="Typo.body1" Class="mb-4">
+                    Browse and manage mock data files
+                </MudText>
+            </MudPaper>
+        </MudItem>
+
+        <!-- File Tree -->
+        <MudItem xs="12" md="4">
+            <MudPaper Class="pa-4" Style="height: 600px; overflow-y: auto;">
+                <MudText Typo="Typo.h6" Class="mb-3">File Structure</MudText>
+                
+                <MudTreeView Items="fileTreeItems" SelectedValue="selectedFile" SelectedValueChanged="@((FileTreeItem? item) => OnSelectedFileChanged(item))">
+                    <ItemTemplate>
+                        <MudTreeViewItem Expanded="@context.IsExpanded" Value="@context">
+                            <Content>
+                                <MudStack Row AlignItems="AlignItems.Center" Spacing="1">
+                                    @if (context.IsDirectory)
+                                    {
+                                        <MudIcon Icon="@(context.IsExpanded ? Icons.Material.Filled.FolderOpen : Icons.Material.Filled.Folder)" 
+                                                Size="Size.Small" />
+                                    }
+                                    else
+                                    {
+                                        <MudIcon Icon="Icons.Material.Filled.InsertDriveFile" Size="Size.Small" />
+                                    }
+                                    <MudText Typo="Typo.body2">@context.Name</MudText>
+                                </MudStack>
+                            </Content>
+                        </MudTreeViewItem>
+                    </ItemTemplate>
+                </MudTreeView>
+            </MudPaper>
+        </MudItem>
+
+        <!-- File Content -->
+        <MudItem xs="12" md="8">
+            <MudPaper Class="pa-4" Style="height: 600px;">
+                <MudStack>
+                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.h6">
+                            @(selectedFile?.Name ?? "Select a file")
+                        </MudText>
+                        @if (selectedFile != null && !selectedFile.IsDirectory)
+                        {
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="LoadFileContent">
+                                <MudIcon Icon="Icons.Material.Filled.Refresh" Class="mr-2" />
+                                Reload
+                            </MudButton>
+                        }
+                    </MudStack>
+
+                    @if (selectedFile == null)
+                    {
+                        <MudAlert Severity="Severity.Info">
+                            Select a JSON file from the tree to view its content
+                        </MudAlert>
+                    }
+                    else if (selectedFile.IsDirectory)
+                    {
+                        <MudAlert Severity="Severity.Info">
+                            This is a directory. Select a file to view its content.
+                        </MudAlert>
+                    }
+                    else if (isLoading)
+                    {
+                        <MudProgressCircular Indeterminate="true" />
+                    }
+                    else if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <MudAlert Severity="Severity.Error">@errorMessage</MudAlert>
+                    }
+                    else
+                    {
+                        <MudTextField T="string" 
+                                      Value="fileContent" 
+                                      Lines="25" 
+                                      ReadOnly="true"
+                                      Variant="Variant.Outlined"
+                                      Style="font-family: 'Courier New', monospace; font-size: 12px;" />
+                    }
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private HashSet<FileTreeItem> fileTreeItems = new();
+    private FileTreeItem? selectedFile;
+    private string fileContent = string.Empty;
+    private bool isLoading = false;
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFileTree();
+    }
+
+    private async Task LoadFileTree()
+    {
+        try
+        {
+            var dataPath = GetDataPath();
+            if (Directory.Exists(dataPath))
+            {
+                var fileTreeList = await BuildFileTree(dataPath, "");
+                fileTreeItems = new HashSet<FileTreeItem>(fileTreeList);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load file tree");
+            errorMessage = $"Failed to load file tree: {ex.Message}";
+        }
+    }
+
+    private async Task<List<FileTreeItem>> BuildFileTree(string basePath, string relativePath)
+    {
+        var items = new List<FileTreeItem>();
+        var fullPath = Path.Combine(basePath, relativePath);
+
+        if (!Directory.Exists(fullPath))
+            return items;
+
+        // Add directories
+        foreach (var directory in Directory.GetDirectories(fullPath))
+        {
+            var dirName = Path.GetFileName(directory);
+            var item = new FileTreeItem
+            {
+                Name = dirName,
+                Path = Path.Combine(relativePath, dirName),
+                IsDirectory = true,
+                IsExpanded = false
+            };
+            
+            item.Items = await BuildFileTree(basePath, item.Path);
+            items.Add(item);
+        }
+
+        // Add JSON files
+        foreach (var file in Directory.GetFiles(fullPath, "*.json"))
+        {
+            var fileName = Path.GetFileName(file);
+            items.Add(new FileTreeItem
+            {
+                Name = fileName,
+                Path = Path.Combine(relativePath, fileName),
+                IsDirectory = false
+            });
+        }
+
+        return items.OrderBy(i => i.IsDirectory ? 0 : 1).ThenBy(i => i.Name).ToList();
+    }
+
+    private async Task LoadFileContent()
+    {
+        if (selectedFile == null || selectedFile.IsDirectory)
+            return;
+
+        isLoading = true;
+        errorMessage = string.Empty;
+        fileContent = string.Empty;
+
+        try
+        {
+            var fullPath = Path.Combine(GetDataPath(), selectedFile.Path);
+            if (File.Exists(fullPath))
+            {
+                var content = await File.ReadAllTextAsync(fullPath);
+                // Pretty print JSON
+                try
+                {
+                    var jsonDocument = System.Text.Json.JsonDocument.Parse(content);
+                    fileContent = System.Text.Json.JsonSerializer.Serialize(jsonDocument, new System.Text.Json.JsonSerializerOptions 
+                    { 
+                        WriteIndented = true 
+                    });
+                }
+                catch
+                {
+                    fileContent = content; // Use original content if JSON parsing fails
+                }
+            }
+            else
+            {
+                errorMessage = "File not found";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load file content for {FilePath}", selectedFile.Path);
+            errorMessage = $"Failed to load file: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private string GetDataPath()
+    {
+        // Try to get data path from configuration or use default
+        return Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "data");
+    }
+
+    private async Task OnSelectedFileChanged(FileTreeItem? item)
+    {
+        selectedFile = item;
+        if (item != null && !item.IsDirectory)
+        {
+            await LoadFileContent();
+        }
+        else
+        {
+            fileContent = string.Empty;
+            errorMessage = string.Empty;
+        }
+    }
+
+    public class FileTreeItem
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Path { get; set; } = string.Empty;
+        public bool IsDirectory { get; set; }
+        public bool IsExpanded { get; set; }
+        public List<FileTreeItem> Items { get; set; } = new();
+    }
+}
